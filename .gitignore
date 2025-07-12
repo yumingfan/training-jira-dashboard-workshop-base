@@ -23,6 +23,10 @@ yarn-error.log*
 .idea/
 *.swp
 *.swo
+.claude/
+
+# Next.js generated files
+next-env.d.ts
 
 # OS generated files
 .DS_Store
