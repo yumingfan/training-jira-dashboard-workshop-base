@@ -1,0 +1,6 @@
+[
+  { "name": "To Do", "value": 25 },
+  { "name": "In Progress", "value": 40 },
+  { "name": "In Review", "value": 15 },
+  { "name": "Done", "value": 20 }
+]

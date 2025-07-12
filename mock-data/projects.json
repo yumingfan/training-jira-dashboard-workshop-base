@@ -1,0 +1,29 @@
+[
+  {
+    "key": "PROJ",
+    "name": "Project Phoenix",
+    "description": "Next-generation authentication system",
+    "lead": "jane-doe",
+    "status": "Active",
+    "created": "2025-05-01",
+    "members": ["alex-smith", "jane-doe"]
+  },
+  {
+    "key": "APOL",
+    "name": "Project Apollo",
+    "description": "Advanced dashboard and analytics platform",
+    "lead": "john-appleseed",
+    "status": "Active",
+    "created": "2025-06-15",
+    "members": ["alex-smith", "john-appleseed"]
+  },
+  {
+    "key": "TITAN",
+    "name": "Project Titan",
+    "description": "Enterprise integration platform",
+    "lead": "jane-doe",
+    "status": "Planning",
+    "created": "2025-07-01",
+    "members": ["jane-doe", "john-appleseed"]
+  }
+]
