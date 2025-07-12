@@ -48,8 +48,8 @@ npm run dev
 ```
 
 Visit:
-- 🖥️ **Frontend**: http://localhost:3000 (Jira Dashboard)
-- 🔧 **Backend API**: http://localhost:3001/api/health
+- 🖥️ **Frontend**: http://localhost:3001 (Jira Dashboard)
+- 🔧 **Backend API**: http://localhost:3002/api/health
 
 ## 📚 Workshop Guide
 

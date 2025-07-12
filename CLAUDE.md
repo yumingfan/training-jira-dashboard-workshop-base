@@ -81,7 +81,7 @@ The repository includes a complete workshop guide in `/workshop-guide/`:
 ## Development Notes
 
 - **Package Manager**: Uses npm workspaces for monorepo management
-- **API Base URL**: Frontend calls backend at `http://localhost:3001/api`
+- **API Base URL**: Frontend calls backend at `http://localhost:3002/api`
 - **Data Persistence**: Mock data changes are saved to JSON files
 - **Error Handling**: Comprehensive error handling in API calls and UI
 - **TypeScript**: Fully typed throughout frontend and backend
