@@ -20,7 +20,8 @@
       "Bash(node:*)",
       "Bash(pip install:*)",
       "Bash(python3 -m pip install:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(kill:*)"
     ],
     "deny": []
   }
