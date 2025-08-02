@@ -5,8 +5,10 @@
 ### 步驟 1: 安裝必要工具
 
 #### 所有平台學員都需要安裝：
-1. **Docker Desktop**
+1. **Docker Desktop** (推薦)
    - [Docker Desktop 下載頁面](https://docs.docker.com/get-started/get-docker/)
+   - 包含 Docker Engine、Docker Compose 和圖形化介面
+   - 最適合初學者，一鍵安裝即可使用
 
 2. **Git** (通常已安裝)
    - [Git 下載頁面](https://git-scm.com/downloads)
