@@ -6,9 +6,7 @@
 
 #### 所有平台學員都需要安裝：
 1. **Docker Desktop**
-   - [Windows](https://docs.docker.com/desktop/install/windows-install/)
-   - [macOS](https://docs.docker.com/desktop/install/mac-install/)
-   - [Linux](https://docs.docker.com/desktop/install/linux-install/)
+   - [Docker Desktop 下載頁面](https://docs.docker.com/get-started/get-docker/)
 
 2. **Git** (通常已安裝)
    - [Git 下載頁面](https://git-scm.com/downloads)
@@ -24,6 +22,22 @@
 # 所有平台學員執行
 git clone https://github.com/prodsence-training/training-jira-dashboard-workshop-base
 cd training-jira-dashboard-workshop-base
+```
+
+### 步驟 2.5: 切換到工作分支
+
+```bash
+# 講師會預先為學員準備好分支
+# 學員只需要切換到指定的分支
+
+# 查看可用分支
+git branch -a
+
+# 切換到工作分支 (講師會告知具體分支名稱)
+git checkout training-20250804-team-pilot1
+
+# 確認當前分支
+git branch
 ```
 
 ### 步驟 3: 確認開發環境
@@ -128,6 +142,16 @@ workshop.bat workshop-reset  # Windows
    make logs  # macOS/Linux
    workshop.bat logs  # Windows
    ```
+
+### 問題 5: 分支相關問題
+```bash
+# 如果切換分支失敗
+git fetch origin
+git checkout training-20250804-team-pilot1
+
+# 如果分支不存在
+# 請聯繫講師確認分支名稱
+```
 
 ## 📚 下一步
 
