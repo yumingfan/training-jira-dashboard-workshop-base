@@ -96,7 +96,7 @@ export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
   // Fetch table summary
   const fetchSummary = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/table/summary`)
+      const response = await fetch(`${API_BASE_URL}/table/summary`)
       if (!response.ok) throw new Error('Failed to fetch table summary')
       const data = await response.json()
       setSummary(data)
@@ -108,7 +108,7 @@ export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
   // Fetch filter options
   const fetchFilterOptions = useCallback(async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/table/filters`)
+      const response = await fetch(`${API_BASE_URL}/table/filters`)
       if (!response.ok) throw new Error('Failed to fetch filter options')
       const data = await response.json()
       setFilterOptions(data)
@@ -134,7 +134,7 @@ export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
       if (status) queryParams.append('status', status)
       if (priority) queryParams.append('priority', priority)
 
-      const response = await fetch(`${API_BASE_URL}/api/table/data?${queryParams}`)
+      const response = await fetch(`${API_BASE_URL}/table/data?${queryParams}`)
       
       if (!response.ok) {
         throw new Error(`Failed to fetch data: ${response.statusText}`)
