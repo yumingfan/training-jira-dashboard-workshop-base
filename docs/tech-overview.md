@@ -209,7 +209,7 @@ class TableDataResponse(BaseModel):
 - **時間相關**：Created、Updated、Resolved、Due date、Σ Time Spent
 - **分類標籤**：Clients、TaskTags、Project.name
 
-#### rawStatusTime 資料表
+#### rawStatusTime 資料表 **[尚未連線]**
 記錄 Issue 狀態變更歷史，用於追蹤狀態轉換時間軸：
 - **Key**：Issue 唯一識別碼
 - **Summary**：Issue 標題
@@ -217,6 +217,8 @@ class TableDataResponse(BaseModel):
 - **Status Transition.date**：狀態變更時間
 - **Status Transition.from**：變更前狀態
 - **Status Transition.to**：變更後狀態
+
+**重要提醒**：此資料表目前尚未整合到系統中，但完整的 schema 定義已記錄在 [Table Schema 文件](./table-schema.md) 中，供未來實作參考。
 
 ## 開發環境設定
 
@@ -253,6 +255,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 ```python
 GOOGLE_SHEET_ID = "1RmJjghgiV3XWLl2BaxT-md8CP3pqb1Wuk-EhFoqp1VM"
 SHEET_NAME = "rawData"
+# 注意：rawStatusTime sheet 尚未連線，但 schema 已記錄在 docs/table-schema.md
 API_PORT = 8000
 CACHE_DURATION = 300  # 5 分鐘
 ```
