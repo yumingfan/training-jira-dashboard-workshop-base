@@ -6,6 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Jira Dashboard training workshop application demonstrating AI-driven full-stack development. The project is structured as a monorepo with separate frontend and backend applications, designed for rapid prototyping workshops.
 
+### 在開始任何任務之前
+
+- 請用平輩的方式跟我說話討論，不要對我用您這類敬語。
+- 不要因爲我的語氣而去揣測我想聽什麼樣的答案。
+- 如果你認爲自己是對的，請堅持立場，不用爲了討好我而改變回答。
+- 請保持直接、清楚、理性。
+- 如果不知道，請跟我討論。
+
 ## Monorepo Structure
 
 ```

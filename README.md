@@ -61,9 +61,12 @@ workshop.bat workshop-start
 ```
 
 Visit:
-- 🖥️ **Frontend**: http://localhost:3000 (Jira Dashboard)
+- 🖥️ **Frontend**: http://localhost:3000 (Jira Dashboard - 原型展示)
+- 📊 **Google Sheets Table**: http://localhost:3000/google-sheets (實際資料整合)
 - 🔧 **Backend API**: http://localhost:8000/api/health
 - 📚 **API 文件**: http://localhost:8000/docs
+
+**注意**：Jira Dashboard 頁面目前為原型展示，使用硬編碼的假資料。學員將在工作坊中學習如何整合真實 API。
 
 ### 🎯 學員開發流程
 
