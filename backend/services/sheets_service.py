@@ -27,6 +27,13 @@ class GoogleSheetsService:
             # Read CSV data
             df = pd.read_csv(StringIO(response.text))
             
+            # 限制只讀取到 Column W (第 23 欄，index 22)
+            # 取得所有欄位名稱
+            all_columns = df.columns.tolist()
+            # 只保留前 23 個欄位
+            if len(all_columns) > 23:
+                df = df.iloc[:, :23]
+            
             # Ensure datetime columns are properly parsed
             if 'Created' in df.columns:
                 df['Created'] = pd.to_datetime(df['Created'], errors='coerce')

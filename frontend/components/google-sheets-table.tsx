@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useGoogleSheets } from '@/hooks/use-google-sheets'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -50,6 +50,30 @@ export function GoogleSheetsTable() {
     priority: priorityFilter || undefined,
   })
 
+  // 從資料和 summary 中動態獲取所有欄位
+  const allColumns = useMemo(() => {
+    if (summary && summary.columns) {
+      return summary.columns.map(col => ({
+        key: col.name.replace(/ /g, '_').replace(/\./g, '_').toLowerCase(),
+        label: col.name,
+        type: col.type,
+        sortable: true
+      }))
+    }
+    
+    // 如果沒有 summary，從第一筆資料推斷欄位
+    if (data.length > 0) {
+      return Object.keys(data[0]).map(key => ({
+        key: key,
+        label: key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
+        type: 'string',
+        sortable: true
+      }))
+    }
+    
+    return []
+  }, [data, summary])
+
   const handleSort = (column: string) => {
     if (sortBy === column) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
@@ -68,11 +92,43 @@ export function GoogleSheetsTable() {
     }
   }
 
+  const formatCellValue = (value: any, columnType: string, columnKey: string) => {
+    if (value === null || value === undefined || value === '') return '-'
+    
+    // 日期欄位
+    if (columnType === 'date' || ['created', 'updated', 'resolved', 'due_date'].includes(columnKey)) {
+      return formatDate(value)
+    }
+    
+    // 數字欄位
+    if (columnType === 'number' && typeof value === 'number') {
+      return value % 1 === 0 ? value.toString() : value.toFixed(2)
+    }
+    
+    return String(value)
+  }
+
   const renderSortIcon = (column: string) => {
     if (sortBy !== column) return <ArrowUpDown className="ml-2 h-4 w-4" />
     return sortOrder === 'asc' ? 
       <ArrowUp className="ml-2 h-4 w-4" /> : 
       <ArrowDown className="ml-2 h-4 w-4" />
+  }
+
+  const getStatusColor = (status: string) => {
+    const statusLower = status?.toLowerCase() || ''
+    if (statusLower.includes('done') || statusLower.includes('resolved')) return 'bg-green-100 text-green-800'
+    if (statusLower.includes('progress')) return 'bg-blue-100 text-blue-800'
+    if (statusLower.includes('backlog')) return 'bg-gray-100 text-gray-800'
+    if (statusLower.includes('todo') || statusLower.includes('to do')) return 'bg-yellow-100 text-yellow-800'
+    return 'bg-gray-100 text-gray-800'
+  }
+
+  const getPriorityColor = (priority: string) => {
+    const priorityLower = priority?.toLowerCase() || ''
+    if (priorityLower.includes('highest') || priorityLower.includes('high')) return 'bg-red-100 text-red-800'
+    if (priorityLower.includes('medium')) return 'bg-yellow-100 text-yellow-800'
+    return 'bg-gray-100 text-gray-800'
   }
 
   if (error) {
@@ -85,14 +141,14 @@ export function GoogleSheetsTable() {
   }
 
   return (
-    <div className="w-full space-y-4">
+    <div className="w-full space-y-4 h-full flex flex-col">
       {/* Header with summary info */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Google Sheets Table View</h1>
           {summary && (
             <p className="text-sm text-gray-500">
-              Sheet: {summary.sheet_name} | Total Rows: {summary.total_rows} | Columns: {summary.total_columns}
+              Sheet: {summary.sheet_name} | Total Rows: {summary.total_rows} | Showing {summary.columns.length} columns
             </p>
           )}
         </div>
@@ -150,117 +206,90 @@ export function GoogleSheetsTable() {
         </Select>
       </div>
 
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead 
-                className="cursor-pointer hover:bg-gray-50"
-                onClick={() => handleSort('Key')}
-              >
-                <div className="flex items-center">
-                  Key {renderSortIcon('Key')}
-                </div>
-              </TableHead>
-              <TableHead>Issue Type</TableHead>
-              <TableHead>Projects</TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-gray-50"
-                onClick={() => handleSort('Summary')}
-              >
-                <div className="flex items-center">
-                  Summary {renderSortIcon('Summary')}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-gray-50"
-                onClick={() => handleSort('Status')}
-              >
-                <div className="flex items-center">
-                  Status {renderSortIcon('Status')}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-gray-50"
-                onClick={() => handleSort('Priority')}
-              >
-                <div className="flex items-center">
-                  Priority {renderSortIcon('Priority')}
-                </div>
-              </TableHead>
-              <TableHead>Story Points</TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-gray-50"
-                onClick={() => handleSort('Created')}
-              >
-                <div className="flex items-center">
-                  Created {renderSortIcon('Created')}
-                </div>
-              </TableHead>
-              <TableHead 
-                className="cursor-pointer hover:bg-gray-50"
-                onClick={() => handleSort('Updated')}
-              >
-                <div className="flex items-center">
-                  Updated {renderSortIcon('Updated')}
-                </div>
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={9} className="text-center py-8">
-                  <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-                  <p className="mt-2 text-gray-500">Loading data...</p>
-                </TableCell>
-              </TableRow>
-            ) : data.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={9} className="text-center py-8 text-gray-500">
-                  No data found
-                </TableCell>
-              </TableRow>
-            ) : (
-              data.map((row) => (
-                <TableRow key={row.key} className="hover:bg-gray-50">
-                  <TableCell className="font-medium">{row.key}</TableCell>
-                  <TableCell>{row.issue_type}</TableCell>
-                  <TableCell>{row.projects}</TableCell>
-                  <TableCell className="max-w-xs truncate" title={row.summary}>
-                    {row.summary}
-                  </TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                      ${row.status === 'Done' ? 'bg-green-100 text-green-800' : 
-                        row.status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
-                        row.status === 'Backlog' ? 'bg-gray-100 text-gray-800' :
-                        'bg-yellow-100 text-yellow-800'}`}>
-                      {row.status}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                      ${row.priority === 'Highest' || row.priority === 'High' ? 'bg-red-100 text-red-800' : 
-                        row.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'}`}>
-                      {row.priority}
-                    </span>
-                  </TableCell>
-                  <TableCell>{row.story_points || '-'}</TableCell>
-                  <TableCell className="text-sm">{formatDate(row.created)}</TableCell>
-                  <TableCell className="text-sm">{formatDate(row.updated)}</TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+      {/* Table container with fixed height and scroll */}
+      <div className="flex-1 min-h-0 rounded-md border bg-white">
+        <div className="h-full overflow-auto relative">
+          <table className="w-full border-collapse">
+            <thead className="sticky top-0 z-20 bg-gray-50">
+              <tr>
+                {allColumns.map((column) => (
+                  <th
+                    key={column.key}
+                    className={`${
+                      column.sortable ? 'cursor-pointer hover:bg-gray-100' : ''
+                    } border-b border-gray-200 px-4 py-3 text-left text-sm font-medium text-gray-900 bg-gray-50`}
+                    onClick={() => column.sortable && handleSort(column.label)}
+                  >
+                    <div className="flex items-center min-w-[120px] max-w-[200px]">
+                      <span className="truncate">{column.label}</span>
+                      {column.sortable && renderSortIcon(column.label)}
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {loading ? (
+                <tr>
+                  <td colSpan={allColumns.length || 1} className="text-center py-8">
+                    <Loader2 className="h-8 w-8 animate-spin mx-auto" />
+                    <p className="mt-2 text-gray-500">Loading data...</p>
+                  </td>
+                </tr>
+              ) : data.length === 0 ? (
+                <tr>
+                  <td colSpan={allColumns.length || 1} className="text-center py-8 text-gray-500">
+                    No data found
+                  </td>
+                </tr>
+              ) : (
+                data.map((row, index) => (
+                  <tr key={row.key || index} className="hover:bg-gray-50">
+                    {allColumns.map((column) => {
+                      const value = row[column.key]
+                      
+                      // 特殊處理 Status 欄位
+                      if (column.key === 'status' || column.label === 'Status') {
+                        return (
+                          <td key={column.key} className="px-4 py-3 text-sm">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(value)}`}>
+                              {value || '-'}
+                            </span>
+                          </td>
+                        )
+                      }
+                      
+                      // 特殊處理 Priority 欄位
+                      if (column.key === 'priority' || column.label === 'Priority') {
+                        return (
+                          <td key={column.key} className="px-4 py-3 text-sm">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(value)}`}>
+                              {value || '-'}
+                            </span>
+                          </td>
+                        )
+                      }
+                      
+                      // 一般欄位 - 限制最大寬度並允許換行
+                      return (
+                        <td key={column.key} className="px-4 py-3 text-sm text-gray-900">
+                          <div className="min-w-[120px] max-w-[200px] break-words">
+                            {formatCellValue(value, column.type, column.key)}
+                          </div>
+                        </td>
+                      )
+                    })}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Pagination */}
       {pagination && (
-        <div className="flex items-center justify-between px-2">
+        <div className="flex items-center justify-between px-2 py-3 bg-white border-t">
           <div className="text-sm text-gray-700">
             Showing {((pagination.current_page - 1) * pagination.page_size) + 1} to{' '}
             {Math.min(pagination.current_page * pagination.page_size, pagination.total_records)} of{' '}

@@ -17,18 +17,7 @@ export interface TableSummary {
 }
 
 export interface TableRow {
-  key: string
-  issue_type: string
-  projects: string
-  summary: string
-  status: string
-  priority: string
-  created: string | null
-  updated: string | null
-  resolved: string | null
-  story_points: number | null
-  sprint: string | null
-  due_date: string | null
+  [key: string]: any  // 動態欄位，可以接受任何欄位名稱和值
 }
 
 export interface PaginationInfo {

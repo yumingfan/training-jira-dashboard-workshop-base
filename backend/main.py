@@ -104,24 +104,28 @@ async def get_table_data(
         # Get filter information
         filter_info = sheets_service.get_applied_and_available_filters(status, priority)
         
-        # Convert records to TableRow models
+        # Convert records to dictionaries with all fields
         table_rows = []
         for record in records:
-            # Map column names to model fields
-            table_rows.append(TableRow(
-                key=str(record.get('Key', '')),
-                issue_type=str(record.get('Issue Type', '')),
-                projects=str(record.get('Projects', '')),
-                summary=str(record.get('Summary', '')),
-                status=str(record.get('Status', '')),
-                priority=str(record.get('Priority', '')),
-                created=record.get('Created') if pd.notna(record.get('Created')) else None,
-                updated=record.get('Updated') if pd.notna(record.get('Updated')) else None,
-                resolved=record.get('Resolved') if pd.notna(record.get('Resolved')) else None,
-                story_points=float(record.get('Story Points')) if pd.notna(record.get('Story Points')) else None,
-                sprint=str(record.get('Sprint', '')) if pd.notna(record.get('Sprint')) else None,
-                due_date=record.get('Due date') if pd.notna(record.get('Due date')) else None
-            ))
+            # 創建一個新的字典來存儲所有欄位
+            row_data = {}
+            
+            # 處理所有欄位
+            for key, value in record.items():
+                # 處理特殊欄位名稱，將空格轉換為底線
+                field_name = key.replace(' ', '_').replace('.', '_').lower()
+                
+                # 處理不同類型的值
+                if pd.isna(value):
+                    row_data[field_name] = None
+                elif isinstance(value, (pd.Timestamp, datetime)):
+                    row_data[field_name] = value.isoformat()
+                elif isinstance(value, (int, float)):
+                    row_data[field_name] = value
+                else:
+                    row_data[field_name] = str(value)
+            
+            table_rows.append(row_data)
         
         return TableDataResponse(
             data=table_rows,

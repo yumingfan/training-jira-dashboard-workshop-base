@@ -47,7 +47,7 @@ class FilterInfo(BaseModel):
 
 
 class TableDataResponse(BaseModel):
-    data: List[TableRow]
+    data: List[Dict[str, Any]]  # 改為接受動態欄位的字典列表
     pagination: PaginationInfo
     filters: FilterInfo
 
