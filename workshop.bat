@@ -12,6 +12,11 @@ if "%1"=="workshop-reset" goto workshop-reset
 if "%1"=="health" goto health
 if "%1"=="logs" goto logs
 if "%1"=="ps" goto ps
+if "%1"=="test" goto test
+if "%1"=="test-frontend" goto test-frontend
+if "%1"=="test-backend" goto test-backend
+if "%1"=="shell-frontend" goto shell-frontend
+if "%1"=="shell-backend" goto shell-backend
 if "%1"=="start" goto workshop-start
 if "%1"=="stop" goto workshop-stop
 if "%1"=="reset" goto workshop-reset
@@ -27,6 +32,11 @@ echo   workshop-reset  - 重置環境
 echo   health         - 檢查服務健康狀態
 echo   logs           - 查看所有服務 logs
 echo   ps             - 查看服務狀態
+echo   test           - 執行所有測試
+echo   test-frontend  - 執行前端測試
+echo   test-backend   - 執行後端測試
+echo   shell-frontend - 進入前端容器
+echo   shell-backend  - 進入後端容器
 echo   help           - 顯示此說明
 echo.
 echo 範例: workshop.bat workshop-start
@@ -73,6 +83,36 @@ goto end
 
 :ps
 docker-compose ps
+goto end
+
+:test
+echo 🧪 執行所有測試...
+echo.
+echo 執行前端測試...
+docker-compose exec frontend npm test
+echo.
+echo 執行後端測試...
+docker-compose exec backend python -m pytest
+goto end
+
+:test-frontend
+echo 🧪 執行前端測試...
+docker-compose exec frontend npm test
+goto end
+
+:test-backend
+echo 🧪 執行後端測試...
+docker-compose exec backend python -m pytest
+goto end
+
+:shell-frontend
+echo 進入前端容器...
+docker-compose exec frontend sh
+goto end
+
+:shell-backend
+echo 進入後端容器...
+docker-compose exec backend bash
 goto end
 
 :unknown

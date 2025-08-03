@@ -41,6 +41,13 @@
 | **React Hook Form** | 7.x | 表單管理 |
 | **Zod** | 3.x | Schema 驗證 |
 
+#### 前端測試工具
+| 技術 | 版本 | 用途 |
+|------|------|------|
+| **Jest** | 29.x | JavaScript 測試框架 |
+| **React Testing Library** | 14.x | React 元件測試 |
+| **@testing-library/jest-dom** | 6.x | DOM 測試擴充匹配器 |
+
 ### 後端技術
 
 | 技術 | 版本 | 用途 |
@@ -51,6 +58,13 @@
 | **Pydantic** | 2.5.0 | 資料驗證和序列化 |
 | **Pandas** | 2.1.3 | 資料處理 |
 | **Requests** | 2.31.0 | HTTP 請求處理 |
+
+#### 後端測試工具
+| 技術 | 版本 | 用途 |
+|------|------|------|
+| **pytest** | 7.4.3 | Python 測試框架 |
+| **pytest-asyncio** | 0.21.1 | 非同步測試支援 |
+| **httpx** | 0.25.2 | 測試用 HTTP 客戶端 |
 
 ### 基礎設施
 
@@ -70,12 +84,17 @@ training-jira-dashboard-workshop-base/
 │   ├── components/          # React 元件
 │   ├── hooks/              # 自訂 React Hooks
 │   ├── lib/                # 工具函式
-│   └── public/             # 靜態資源
+│   ├── public/             # 靜態資源
+│   ├── __tests__/          # 前端測試檔案
+│   ├── jest.config.js      # Jest 配置
+│   └── jest.setup.js       # Jest 設定
 ├── backend/                 # FastAPI 後端應用
 │   ├── main.py            # 應用入口
 │   ├── config.py          # 配置管理
 │   ├── models.py          # Pydantic 模型
-│   └── services/          # 商業邏輯
+│   ├── services/          # 商業邏輯
+│   ├── tests/             # 後端測試檔案
+│   └── pytest.ini         # pytest 配置
 ├── shared/                  # 共享程式碼
 ├── mock-data/              # 測試資料
 ├── workshop-guide/         # 工作坊教材
@@ -339,9 +358,61 @@ services:
 3. Code Review 流程
 4. CI/CD 整合（GitHub Actions）
 
+## 測試架構
+
+### 測試策略
+
+專案採用 Docker 容器內執行測試的策略，確保測試環境的一致性，學員無需在本地安裝測試工具。
+
+### 前端測試
+
+- **測試框架**：Jest + React Testing Library
+- **測試位置**：`frontend/__tests__/`
+- **執行方式**：`make test-frontend` 或 `workshop.bat test-frontend`
+- **測試範例**：
+  ```typescript
+  // 測試首頁是否正確顯示環境測試訊息
+  it('renders the environment test success message', () => {
+    render(<Home />)
+    const successMessage = screen.getByText(/Docker 環境測試成功/)
+    expect(successMessage).toBeInTheDocument()
+  })
+  ```
+
+### 後端測試
+
+- **測試框架**：pytest
+- **測試位置**：`backend/tests/`
+- **執行方式**：`make test-backend` 或 `workshop.bat test-backend`
+- **測試範例**：
+  ```python
+  def test_health_check():
+      """測試健康檢查端點"""
+      response = client.get("/api/health")
+      assert response.status_code == 200
+      assert response.json()["status"] == "healthy"
+  ```
+
+### 測試執行指令
+
+```bash
+# 前置條件：確保容器正在運行
+make workshop-start
+
+# 執行所有測試
+make test
+
+# 只執行前端測試
+make test-frontend
+
+# 只執行後端測試
+make test-backend
+```
+
 ## 相關文件
 
 - [Table Schema 文件](./table-schema.md) - 詳細的資料表欄位說明
+- [測試指南](./testing-guide.md) - 完整的測試框架說明與執行方式
 - [API Overview](./api-overview.md) - API 端點詳細說明（如存在）
 - [CLAUDE.md](../CLAUDE.md) - AI 開發助手指引
 

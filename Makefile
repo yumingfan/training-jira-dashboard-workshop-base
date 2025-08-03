@@ -48,8 +48,17 @@ shell-backend: ## 進入後端容器
 ps: ## 查看服務狀態
 	docker-compose ps
 
+test-frontend: ## 執行前端測試
+	docker-compose exec frontend npm test
+
 test-backend: ## 執行後端測試
 	docker-compose exec backend python -m pytest
+
+test: ## 執行所有測試
+	@echo "🧪 執行前端測試..."
+	@docker-compose exec frontend npm test
+	@echo "🧪 執行後端測試..."
+	@docker-compose exec backend python -m pytest
 
 health: ## 檢查服務健康狀態
 	@echo "🔍 檢查前端服務..."

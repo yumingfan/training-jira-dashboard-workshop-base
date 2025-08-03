@@ -132,6 +132,11 @@ make workshop-reset
 # 進入容器 (進階使用)
 make shell-frontend
 make shell-backend
+
+# 執行測試
+make test             # 執行所有測試
+make test-frontend    # 只執行前端測試
+make test-backend     # 只執行後端測試
 ```
 
 **Windows 學員:**
@@ -147,6 +152,11 @@ workshop.bat workshop-reset
 
 # 查看服務狀態
 workshop.bat ps
+
+# 執行測試
+workshop.bat test             # 執行所有測試
+workshop.bat test-frontend    # 只執行前端測試
+workshop.bat test-backend     # 只執行後端測試
 ```
 
 ## 📚 工作坊指南
@@ -181,12 +191,14 @@ workshop.bat ps
 - **🎨 Tailwind CSS** - 實用優先的 CSS 框架
 - **📊 Recharts** - 資料視覺化
 - **🔷 TypeScript** - 型別安全
+- **🧪 Jest + React Testing Library** - 測試框架
 
 ### 後端 (工作坊建構)
 - **🐍 Python + FastAPI** - 現代 Python Web 框架
 - **📄 Google Sheets 整合** - 真實資料來源
 - **🔄 RESTful APIs** - 標準 HTTP 端點
 - **📊 Pandas** - 資料處理
+- **🧪 pytest** - Python 測試框架
 
 ### 開發工具
 - **🐳 Docker** - 容器化開發環境
@@ -397,6 +409,7 @@ TC-LOGIN-001: 驗證註冊使用者成功登入
 - **[學員參與指南](./docs/student-setup-guide.md)** - 完整的環境設定步驟 ⭐ **新學員請從這裡開始**
 - **[工作坊指南](./workshop-guide/README.md)** - 完整教學
 - **[Docker 設定指南](./docs/docker_setup_guide.md)** - Docker 環境設定
+- **[測試指南](./docs/testing-guide.md)** - 測試框架與執行方式 🧪
 - **[CLAUDE.md](./CLAUDE.md)** - AI 助手指引
 - **[模擬資料](./mock-data/README.md)** - 資料結構參考
 
