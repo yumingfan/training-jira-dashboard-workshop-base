@@ -241,8 +241,136 @@ docker-compose down          # 停止服務
 docker-compose logs -f       # 查看即時 logs
 ```
 
+## 🤖 AI 輔助產品開發流程
+
+本工作坊採用結構化的 AI 輔助開發流程，確保從需求分析到測試實作的完整連貫性：
+
+### 📋 四階段開發流程
+
+```mermaid
+graph TD
+    A["🎯 產品需求<br/>業務目標"] --> B["📋 Feature Spec 撰寫<br/>feature-spec-template.md"]
+    B --> C["📝 User Story 拆分<br/>user-story-guide.md"]
+    C --> D["✅ Acceptance Criteria 設計<br/>acceptance-criteria-guide.md"]
+    D --> E["🧪 Test Case 產出<br/>testcase-guide.md"]
+    E --> F["💻 自動化測試腳本<br/>程式碼實作"]
+    
+    B --> B1["完整功能規格<br/>技術實作方向"]
+    C --> C1["符合 INVEST 原則<br/>的使用者故事"]
+    D --> D1["Gherkin 格式<br/>驗收標準"]
+    E --> E1["詳細測試案例<br/>可執行步驟"]
+    
+    G["🤖 AI 輔助"] -.-> B
+    G -.-> C
+    G -.-> D
+    G -.-> E
+    G -.-> F
+    
+    style A fill:#fff2cc,stroke:#d6b656
+    style B fill:#ffecb3,stroke:#ff8f00
+    style C fill:#e1f5fe,stroke:#0277bd
+    style D fill:#f3e5f5,stroke:#7b1fa2
+    style E fill:#e8f5e8,stroke:#388e3c
+    style F fill:#fce4ec,stroke:#c2185b
+    style G fill:#f0f0f0,stroke:#666666
+```
+
+#### **階段 1: Feature Spec 撰寫** 📋
+**使用指引：** `docs/feature-spec-template.md`
+
+- **目標**：將產品需求整理為完整的功能規格文件
+- **產出**：包含背景、目標、技術實作方向的完整規格
+- **AI 角色**：協助結構化需求，確保考量完整性
+- **涵蓋內容**：需求背景、功能描述、技術影響、成效追蹤
+
+#### **階段 2: User Story 拆分** 📝
+**使用指引：** `docs/user-story-guide.md`
+
+- **目標**：將 Feature Spec 拆分為可執行的使用者故事
+- **產出**：符合 INVEST 原則的 User Story 集合
+- **AI 角色**：協助拆分功能，確保故事獨立且有價值
+- **範例格式**：`ID-XXX: 作為 [角色]，我希望 [功能]，以便 [價值]`
+
+#### **階段 3: Acceptance Criteria 設計** ✅
+**使用指引：** `docs/acceptance-criteria-guide.md`
+
+- **目標**：將每個 User Story 具體化為可驗證的驗收標準
+- **產出**：Gherkin 格式的驗收標準（Given-When-Then）
+- **AI 角色**：生成完整場景，涵蓋正常流程、邊界條件、異常處理
+- **涵蓋範圍**：✅ 正常流程 ⚠️ 邊界條件 ❌ 異常情況 🔒 權限驗證
+
+#### **階段 4: Test Case 產出** 🧪
+**使用指引：** `docs/testcase-guide.md`
+
+- **目標**：將 AC 轉換為具體的測試案例
+- **產出**：詳細的測試步驟與預期結果
+- **AI 角色**：生成可執行的測試案例，為自動化測試做準備
+- **測試類型**：功能測試、邊界測試、異常測試、權限測試
+
+### 🔄 完整流程示範
+
+**輸入：** 產品需求「提升使用者登入體驗」
+
+**第 1 階段產出 (Feature Spec)：**
+```markdown
+# AI-001-使用者登入優化 - Feature Spec
+
+## 📝 功能概述
+### 需求背景
+目前登入流程複雜，使用者反饋登入時間過長，影響使用體驗
+
+### 功能描述
+優化登入流程，提供快速、安全的身份驗證體驗
+
+### 預期影響
+- 使用者影響：縮短登入時間，提升使用體驗
+- 業務影響：提高使用者留存率 5%
+- 技術影響：前端登入頁面、後端驗證 API
+```
+
+**第 2 階段產出 (User Stories)：**
+```
+ID-005: 作為註冊使用者，我希望能透過帳號密碼快速登入系統，以便存取我的個人儀表板。
+ID-006: 作為使用者，我希望在登入失敗時看到清楚的錯誤提示，以便了解如何修正問題。
+```
+
+**第 3 階段產出 (Acceptance Criteria)：**
+```gherkin
+場景：成功登入系統
+Given 用戶帳號 "test@example.com" 已註冊並啟用
+When 用戶輸入正確密碼並點擊登入按鈕
+Then 系統應驗證身份並導向至儀表板
+And 整個過程在 3 秒內完成
+```
+
+**第 4 階段產出 (Test Cases)：**
+```
+TC-LOGIN-001: 驗證註冊使用者成功登入
+測試步驟：1. 開啟登入頁面 2. 輸入帳號密碼 3. 點擊登入按鈕
+預期結果：頁面導向儀表板，顯示歡迎訊息，響應時間 < 3秒
+```
+
+### 🎯 流程優勢
+
+- **✅ 完整性**：從 Feature Spec 到 Test Case 的完整覆蓋
+- **✅ 連貫性**：四個階段環環相扣，確保需求完整傳遞
+- **✅ 可追溯性**：每個測試案例都能追溯到原始 Feature Spec
+- **✅ 結構化**：PM、PO、Dev、QA 各司其職，分工明確
+- **✅ AI 友善**：每個階段都有專門的模板和提示
+- **✅ 品質保證**：結構化流程降低遺漏和誤解風險
+- **✅ 自動化就緒**：測試案例直接對應自動化腳本需求
+
+---
+
 ## 📖 文件
 
+### 🎯 開發流程指引
+- **[Feature Spec 模板](./docs/feature-spec-template.md)** - PM 功能規格撰寫 📋
+- **[User Story 撰寫指引](./docs/user-story-guide.md)** - AI 輔助需求拆分 📝
+- **[Acceptance Criteria 撰寫指引](./docs/acceptance-criteria-guide.md)** - 驗收標準設計 ✅
+- **[Test Case 撰寫指引](./docs/testcase-guide.md)** - 測試案例產出 🧪
+
+### 🚀 工作坊資源
 - **[學員參與指南](./docs/student-setup-guide.md)** - 完整的環境設定步驟 ⭐ **新學員請從這裡開始**
 - **[工作坊指南](./workshop-guide/README.md)** - 完整教學
 - **[Docker 設定指南](./docs/docker_setup_guide.md)** - Docker 環境設定
