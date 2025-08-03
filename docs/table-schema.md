@@ -1,80 +1,80 @@
-# Table Schema Documentation
+# 資料表架構文件
 
-This document describes the meaning and purpose of each column in the Google Sheets rawData table.
+本文件說明 Google Sheets rawData 資料表中各欄位的含義和用途。
 
-## Column Descriptions
+## 欄位說明
 
-### Basic Identification Fields
+### 基本識別欄位
 
-| Column Name | Type | Description |
+| 欄位名稱 | 類型 | 說明 |
 |---------|------|------|
-| **Key** | string | Unique identifier for the issue, typically in format `PROJECT-NUMBER` (e.g., IHAIC-1) |
-| **Issue Type** | string | Type of issue such as Epic, Story, Task, Bug, etc. |
-| **Projects** | string | Project abbreviation or code |
-| **Summary** | string | Title or brief description of the issue |
-| **parent** | string | Key of the parent issue, used to establish hierarchical relationships |
+| **Key** | string | Issue 的唯一識別碼，通常格式為 `PROJECT-NUMBER`（例如：IHAIC-1） |
+| **Issue Type** | string | Issue 的類型，如 Epic、Story、Task、Bug 等 |
+| **Projects** | string | 所屬專案的簡稱或代碼 |
+| **Summary** | string | Issue 的標題或簡短描述 |
+| **parent** | string | 父級 Issue 的 Key，用於建立 Issue 之間的層級關係 |
 
-### Status and Progress Fields
+### 狀態與進度欄位
 
-| Column Name | Type | Description |
+| 欄位名稱 | 類型 | 說明 |
 |---------|------|------|
-| **Status** | string | Current status (e.g., Backlog, To Do, In Progress, Done) |
-| **Sprint** | string | Sprint name or number the issue belongs to |
-| **Status Category** | string | Status classification, typically To Do, In Progress, or Done |
-| **Status Category Changed** | string | Timestamp or record of when status category last changed |
+| **Status** | string | 當前狀態（如：Backlog、To Do、In Progress、Done） |
+| **Sprint** | string | 所屬的 Sprint 名稱或編號 |
+| **Status Category** | string | 狀態分類，通常為 To Do、In Progress、Done 三大類 |
+| **Status Category Changed** | string | 狀態分類最後變更的時間戳記或記錄 |
 
-### Priority and Importance Fields
+### 優先級與重要性欄位
 
-| Column Name | Type | Description |
+| 欄位名稱 | 類型 | 說明 |
 |---------|------|------|
-| **Priority** | string | Priority level (e.g., Highest, High, Medium, Low, Lowest) |
-| **Urgency** | string | Urgency level, used to distinguish between items with same priority |
+| **Priority** | string | 優先級（如：Highest、High、Medium、Low、Lowest） |
+| **Urgency** | string | 緊急程度，用於區分優先級相同但緊急程度不同的項目 |
 
-### Estimation and Scoring Fields
+### 估算與評分欄位
 
-| Column Name | Type | Description |
+| 欄位名稱 | 類型 | 說明 |
 |---------|------|------|
-| **T-Size** | number | T-Shirt sizing estimation, possibly numeric (e.g., 1=XS, 2=S, 3=M, 5=L, 8=XL) |
-| **Confidence** | number | Confidence level in the estimation, possibly percentage or score |
-| **Story Points** | number | Agile story points for effort estimation |
-| **BusinessPoints** | number | Business value points to measure feature value |
+| **T-Size** | number | T-Shirt Size 估算法，可能使用數值表示（如：1=XS, 2=S, 3=M, 5=L, 8=XL） |
+| **Confidence** | number | 估算的信心程度，可能是百分比或評分 |
+| **Story Points** | number | 敏捷開發中的故事點數，用於估算工作量 |
+| **BusinessPoints** | number | 商業價值點數，用於衡量功能的商業價值 |
 
-### Time-Related Fields
+### 時間相關欄位
 
-| Column Name | Type | Description |
+| 欄位名稱 | 類型 | 說明 |
 |---------|------|------|
-| **Created** | date | Issue creation timestamp |
-| **Updated** | date | Last update timestamp |
-| **Resolved** | date | Resolution/completion timestamp |
-| **Due date** | date | Expected due date |
-| **Σ Time Spent** | string | Total time spent, may include units (e.g., 2h, 3d) |
+| **Created** | date | Issue 建立時間 |
+| **Updated** | date | 最後更新時間 |
+| **Resolved** | date | 解決/完成時間 |
+| **Due date** | date | 預計到期日 |
+| **Σ Time Spent** | string | 總計花費時間，可能包含時間單位（如：2h、3d） |
 
-### Classification and Tagging Fields
+### 分類與標籤欄位
 
-| Column Name | Type | Description |
+| 欄位名稱 | 類型 | 說明 |
 |---------|------|------|
-| **Clients** | string | Related clients or client groups |
-| **TaskTags** | string | Task tags for categorization and search |
-| **Project.name** | string | Full project name |
+| **Clients** | string | 相關客戶或客戶群組 |
+| **TaskTags** | string | 任務標籤，用於分類和搜尋 |
+| **Project.name** | string | 專案的完整名稱 |
 
-## Data Types
+## 資料類型說明
 
-- **string**: Text data
-- **number**: Numeric data, may include decimals
-- **date**: Date/time format, typically ISO 8601 (YYYY-MM-DD HH:mm:ss)
+- **string**：文字資料
+- **number**：數值資料，可包含小數
+- **date**：日期時間格式，通常為 ISO 8601 格式（YYYY-MM-DD HH:mm:ss）
 
-## Usage Notes
+## 使用注意事項
 
-1. **Key field** is the unique identifier for each record and cannot be duplicated
-2. **Date fields** will show as null or empty when no value is present
-3. **Numeric fields** like Story Points may contain decimals for more precise estimates
-4. **Status field** values may vary based on project configuration
+1. **Key 欄位**是每筆資料的唯一識別碼，不可重複
+2. **日期欄位**在沒有值時會顯示為 null 或空白
+3. **數值欄位**如 Story Points 可能包含小數點，用於更精確的估算
+4. **狀態欄位**的值可能因專案設定而有所不同
 
-## Data Integrity
+## 資料完整性
 
-- Required fields: Key, Issue Type, Projects, Summary, Status, Priority
-- Optional fields: All other fields may be empty depending on usage
+- 必填欄位：Key、Issue Type、Projects、Summary、Status、Priority
+- 選填欄位：其他所有欄位根據實際使用情況可能為空
 
-## Update Frequency
+## 更新頻率
 
-This data table is read via Google Sheets API with a 5-minute cache setting, so data may have up to 5 minutes delay.
+此資料表透過 Google Sheets API 讀取，系統設定了 5 分鐘的快取機制，因此資料最多可能有 5 分鐘的延遲。
