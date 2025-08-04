@@ -13,6 +13,9 @@ export function Navigation() {
             <Link href="/google-sheets">
               <Button variant="ghost">Google Sheets Table</Button>
             </Link>
+            <Link href="/sprint-progress">
+              <Button variant="ghost">Sprint 進度</Button>
+            </Link>
           </div>
         </div>
       </div>

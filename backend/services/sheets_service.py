@@ -4,7 +4,7 @@ from io import StringIO
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Tuple, Any
 import config
-from models import TableRow, FilterOptions
+from models import TableRow, FilterOptions, SprintProgress, SprintStatusCount, SprintBugInfo
 
 
 class GoogleSheetsService:
@@ -210,3 +210,181 @@ class GoogleSheetsService:
                 "priority": filter_options.priority
             }
         }
+    
+    def get_sprint_progress(self, sprint_name: Optional[str] = None) -> SprintProgress:
+        """Calculate Sprint progress and statistics"""
+        df = self.get_data()
+        
+        # Filter by Sprint if specified
+        if sprint_name and 'Sprint' in df.columns:
+            df = df[df['Sprint'] == sprint_name]
+        elif 'Sprint' in df.columns:
+            # If no sprint specified, get the most recent active sprint
+            # Find the most recent sprint based on due dates or creation dates
+            most_recent_sprint = self._get_most_recent_sprint(df)
+            if most_recent_sprint:
+                df = df[df['Sprint'] == most_recent_sprint]
+                sprint_name = most_recent_sprint
+        
+        # Calculate basic statistics
+        total_stories = len(df)
+        
+        # Define completion statuses (can be customized)
+        completion_statuses = ['Done', 'Resolved', 'Closed', 'Complete']
+        
+        # Calculate completed stories
+        completed_stories = 0
+        if 'Status' in df.columns:
+            completed_stories = len(df[df['Status'].isin(completion_statuses)])
+        
+        completion_percentage = (completed_stories / total_stories * 100) if total_stories > 0 else 0
+        
+        # Calculate Story Points
+        total_story_points = 0
+        completed_story_points = 0
+        
+        if 'Story Points' in df.columns:
+            # Convert to numeric, handling non-numeric values
+            df['Story Points'] = pd.to_numeric(df['Story Points'], errors='coerce')
+            total_story_points = df['Story Points'].sum()
+            
+            # Calculate completed story points
+            completed_df = df[df['Status'].isin(completion_statuses)] if 'Status' in df.columns else df
+            completed_story_points = completed_df['Story Points'].sum()
+        
+        story_points_completion_percentage = (completed_story_points / total_story_points * 100) if total_story_points > 0 else 0
+        
+        # Calculate status breakdown
+        status_breakdown = []
+        if 'Status' in df.columns:
+            status_counts = df['Status'].value_counts()
+            total_items = len(df)
+            
+            for status, count in status_counts.items():
+                percentage = (count / total_items * 100) if total_items > 0 else 0
+                status_breakdown.append(SprintStatusCount(
+                    status=str(status),
+                    count=int(count),
+                    percentage=round(percentage, 2)
+                ))
+        
+        # Calculate Bug statistics
+        total_bugs = 0
+        bugs_by_severity = {}
+        bugs_by_status = []
+        
+        if 'Issue Type' in df.columns:
+            # Count bugs
+            bugs_df = df[df['Issue Type'] == 'Bug']
+            total_bugs = len(bugs_df)
+            
+            # Bugs by severity (using Priority as severity proxy)
+            if 'Priority' in bugs_df.columns:
+                severity_counts = bugs_df['Priority'].value_counts()
+                bugs_by_severity = {str(k): int(v) for k, v in severity_counts.items()}
+            
+            # Bugs by status
+            if 'Status' in bugs_df.columns:
+                bug_status_counts = bugs_df['Status'].value_counts()
+                total_bug_items = len(bugs_df)
+                
+                for status, count in bug_status_counts.items():
+                    percentage = (count / total_bug_items * 100) if total_bug_items > 0 else 0
+                    bugs_by_status.append(SprintStatusCount(
+                        status=str(status),
+                        count=int(count),
+                        percentage=round(percentage, 2)
+                    ))
+        
+        # Calculate remaining work days (simplified calculation)
+        remaining_work_days = None
+        sprint_end_date = None
+        
+        # Try to estimate sprint end date from due dates
+        if 'Due date' in df.columns:
+            valid_due_dates = df['Due date'].dropna()
+            if len(valid_due_dates) > 0:
+                latest_due_date = valid_due_dates.max()
+                if pd.notna(latest_due_date):
+                    sprint_end_date = latest_due_date
+                    # Calculate remaining work days
+                    today = datetime.now().date()
+                    if hasattr(latest_due_date, 'date'):
+                        end_date = latest_due_date.date()
+                        remaining_work_days = (end_date - today).days
+        
+        # Create bug info
+        bug_info = SprintBugInfo(
+            total_bugs=total_bugs,
+            bugs_by_severity=bugs_by_severity,
+            bugs_by_status=bugs_by_status
+        )
+        
+        return SprintProgress(
+            sprint_name=sprint_name or "Current Sprint",
+            total_stories=total_stories,
+            completed_stories=completed_stories,
+            completion_percentage=round(completion_percentage, 2),
+            total_story_points=round(total_story_points, 2),
+            completed_story_points=round(completed_story_points, 2),
+            story_points_completion_percentage=round(story_points_completion_percentage, 2),
+            remaining_work_days=remaining_work_days,
+            sprint_end_date=sprint_end_date,
+            status_breakdown=status_breakdown,
+            bug_info=bug_info,
+            last_updated=datetime.now()
+        )
+    
+    def _get_most_recent_sprint(self, df: pd.DataFrame) -> Optional[str]:
+        """Find the most recent active sprint based on due dates or creation dates"""
+        if 'Sprint' not in df.columns:
+            return None
+        
+        # Get unique sprints
+        sprints = df['Sprint'].dropna().unique()
+        if len(sprints) == 0:
+            return None
+        
+        # If only one sprint, return it
+        if len(sprints) == 1:
+            return str(sprints[0])
+        
+        # Try to find the most recent sprint based on due dates
+        if 'Due date' in df.columns:
+            # Group by sprint and find the latest due date for each sprint
+            sprint_dates = {}
+            for sprint in sprints:
+                sprint_df = df[df['Sprint'] == sprint]
+                valid_dates = sprint_df['Due date'].dropna()
+                if len(valid_dates) > 0:
+                    latest_date = valid_dates.max()
+                    if pd.notna(latest_date):
+                        sprint_dates[sprint] = latest_date
+            
+            if sprint_dates:
+                # Find the sprint with the latest due date
+                most_recent_sprint = max(sprint_dates.items(), key=lambda x: x[1])[0]
+                return str(most_recent_sprint)
+        
+        # Fallback: try to find based on creation dates
+        if 'Created' in df.columns:
+            sprint_dates = {}
+            for sprint in sprints:
+                sprint_df = df[df['Sprint'] == sprint]
+                valid_dates = sprint_df['Created'].dropna()
+                if len(valid_dates) > 0:
+                    latest_date = valid_dates.max()
+                    if pd.notna(latest_date):
+                        sprint_dates[sprint] = latest_date
+            
+            if sprint_dates:
+                # Find the sprint with the latest creation date
+                most_recent_sprint = max(sprint_dates.items(), key=lambda x: x[1])[0]
+                return str(most_recent_sprint)
+        
+        # Final fallback: return the first non-empty sprint
+        non_empty_sprints = [s for s in sprints if str(s).strip()]
+        if non_empty_sprints:
+            return str(non_empty_sprints[0])
+        
+        return None

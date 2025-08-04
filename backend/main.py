@@ -18,7 +18,8 @@ from models import (
     FilterOptions,
     TableRow,
     PaginationInfo,
-    FilterInfo
+    FilterInfo,
+    SprintProgressResponse
 )
 from services.sheets_service import GoogleSheetsService
 
@@ -147,6 +148,24 @@ async def get_filter_options():
         return filter_options
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get filter options: {str(e)}")
+
+
+@app.get("/api/sprint/progress", response_model=SprintProgressResponse)
+async def get_sprint_progress(
+    sprint_name: Optional[str] = Query(None, description="Sprint name to filter by")
+):
+    """Get Sprint progress and statistics"""
+    try:
+        sprint_progress = sheets_service.get_sprint_progress(sprint_name)
+        
+        return SprintProgressResponse(
+            success=True,
+            data=sprint_progress,
+            message="Sprint progress retrieved successfully"
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get sprint progress: {str(e)}")
 
 
 if __name__ == "__main__":

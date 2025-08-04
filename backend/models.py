@@ -68,3 +68,37 @@ class HealthCheckResponse(BaseModel):
 class APIInfoResponse(BaseModel):
     message: str
     version: str
+
+
+# Sprint Progress Models
+class SprintStatusCount(BaseModel):
+    status: str
+    count: int
+    percentage: float
+
+
+class SprintBugInfo(BaseModel):
+    total_bugs: int
+    bugs_by_severity: Dict[str, int]
+    bugs_by_status: List[SprintStatusCount]
+
+
+class SprintProgress(BaseModel):
+    sprint_name: str
+    total_stories: int
+    completed_stories: int
+    completion_percentage: float
+    total_story_points: float
+    completed_story_points: float
+    story_points_completion_percentage: float
+    remaining_work_days: Optional[int]
+    sprint_end_date: Optional[datetime]
+    status_breakdown: List[SprintStatusCount]
+    bug_info: SprintBugInfo
+    last_updated: datetime
+
+
+class SprintProgressResponse(BaseModel):
+    success: bool
+    data: SprintProgress
+    message: str
