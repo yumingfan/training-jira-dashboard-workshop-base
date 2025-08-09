@@ -37,12 +37,18 @@ logs-frontend: ## 查看前端 logs
 logs-backend: ## 查看後端 logs
 	docker-compose logs -f backend
 
+logs-backend-dotnet: ## 查看 .NET 後端 logs
+	docker-compose logs -f backend-dotnet
+
 # 進入容器
 shell-frontend: ## 進入前端容器
 	docker-compose exec frontend sh
 
 shell-backend: ## 進入後端容器
 	docker-compose exec backend bash
+
+shell-backend-dotnet: ## 進入 .NET 後端容器
+	docker-compose exec backend-dotnet bash
 
 # 測試和檢查
 ps: ## 查看服務狀態
@@ -53,6 +59,9 @@ test-frontend: ## 執行前端測試
 
 test-backend: ## 執行後端測試
 	docker-compose exec backend python -m pytest
+
+test-backend-dotnet: ## 執行 .NET 後端測試
+	docker-compose exec backend-dotnet dotnet test
 
 test: ## 執行所有測試
 	@echo "🧪 執行前端測試..."

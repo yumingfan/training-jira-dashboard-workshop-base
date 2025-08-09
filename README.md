@@ -98,6 +98,7 @@ make workshop-start
 # 課程中修改程式碼 (即時生效，無需重啟)
 # 修改 frontend/app/page.tsx → 瀏覽器自動更新
 # 修改 backend/main.py → API 自動重新載入
+# 修改 backend-dotnet/Program.cs → .NET API 自動重新編譯與載入
 
 # 課程結束時停止
 make workshop-stop
@@ -111,10 +112,19 @@ workshop.bat workshop-start
 # 課程中修改程式碼 (即時生效，無需重啟)
 # 修改 frontend/app/page.tsx → 瀏覽器自動更新
 # 修改 backend/main.py → API 自動重新載入
+# 修改 backend-dotnet/Program.cs → .NET API 自動重新編譯與載入
 
 # 課程結束時停止
 workshop.bat workshop-stop
 ```
+
+#### 針對 .NET 後端開發的學員
+
+對於專注於 `backend-dotnet` 開發的學員，其完整開發流程如下：
+1. 執行 `make dev` (或 `docker-compose up --build`) 來啟動所有服務。
+2. 在 `backend-dotnet` 資料夾中修改 C# 程式碼。
+3. 服務會在容器內自動重啟。他可以用 `make logs-backend-dotnet` 來查看進程。
+4. 在 http://localhost:8001 測試他的 API 變更。
 
 ### 🛠️ 常用指令
 
