@@ -38,6 +38,19 @@ services:
     networks:
       - workshop-network
 
+  # Backend (.NET)
+  backend-dotnet:
+    build:
+      context: ./backend-dotnet
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8080"
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    restart: unless-stopped
+    networks:
+      - workshop-network
+
   # Development tools container (optional)
   devtools:
     image: node:18-alpine
