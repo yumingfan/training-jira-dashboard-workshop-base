@@ -1,17 +1,11 @@
-# Stage 1: Build the application
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+# Use the .NET SDK image, which contains all necessary tools for development
+FROM mcr.microsoft.com/dotnet/sdk:8.0
 WORKDIR /app
 
 # Copy csproj and restore as distinct layers to leverage Docker cache
 COPY *.csproj ./
 RUN dotnet restore
 
-# Copy everything else and build
+# Copy the rest of the application files
 COPY . ./
-RUN dotnet publish -c Release -o out
 
-# Stage 2: Create the runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
-WORKDIR /app
-COPY --from=build /app/out .
-ENTRYPOINT ["dotnet", "backend-dotnet.dll"]

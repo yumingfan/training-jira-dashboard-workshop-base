@@ -120,11 +120,16 @@ workshop.bat workshop-stop
 
 #### 針對 .NET 後端開發的學員
 
-對於專注於 `backend-dotnet` 開發的學員，其完整開發流程如下：
-1. 執行 `make dev` (或 `docker-compose up --build`) 來啟動所有服務。
-2. 在 `backend-dotnet` 資料夾中修改 C# 程式碼。
-3. 服務會在容器內自動重啟。他可以用 `make logs-backend-dotnet` 來查看進程。
-4. 在 http://localhost:8001 測試他的 API 變更。
+對於專注於 `backend-dotnet` 開發的學員，我們建議單獨啟動 .NET 服務以加快速度。其完整開發流程如下：
+
+1. **啟動 .NET 後端服務**：在終端機中執行以下指令。
+   ```bash
+   docker-compose up --build backend-dotnet
+   ```
+2. **修改 C# 程式碼**：在 `backend-dotnet` 資料夾中修改程式碼並儲存。
+3. **觀察自動重載**：回到終端機，你會看到 `dotnet watch` 偵測到變更並自動重新編譯服務。
+4. **測試 API 變更**：在瀏覽器或 API 工具中訪問 `http://localhost:8001` 來驗證你的修改。
+5. **結束開發**：完成後，在終端機按下 `Ctrl + C` 即可停止服務。
 
 ### 🛠️ 常用指令
 

@@ -42,3 +42,7 @@ Thumbs.db
 
 # Dependencies lock files (optional - if using npm workspaces)
 package-lock.json
+
+# .NET build artifacts
+**/[Bb]in/
+**/[Oo]bj/
