@@ -12,31 +12,30 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=http://backend-dotnet:8080/api
       - CHOKIDAR_USEPOLLING=true
-    depends_on:
-      - backend
+    
     stdin_open: true
     tty: true
     networks:
       - workshop-network
 
   # Backend (Python FastAPI)
-  backend:
-    build: 
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./backend:/app
-      - ./mock-data:/app/data
-    environment:
-      - PYTHONPATH=/app
-      - DEBUG=true
-      - GOOGLE_SHEET_ID=1RmJjghgiV3XWLl2BaxT-md8CP3pqb1Wuk-EhFoqp1VM
-      - SHEET_NAME=rawData
-    restart: unless-stopped
-    networks:
-      - workshop-network
+  # backend:
+  #   build: 
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - ./backend:/app
+  #     - ./mock-data:/app/data
+  #   environment:
+  #     - PYTHONPATH=/app
+  #     - DEBUG=true
+  #     - GOOGLE_SHEET_ID=1RmJjghgiV3XWLl2BaxT-md8CP3pqb1Wuk-EhFoqp1VM
+  #     - SHEET_NAME=rawData
+  #   restart: unless-stopped
+  #   networks:
+  #     - workshop-network
 
   # Backend (.NET)
   backend-dotnet:
