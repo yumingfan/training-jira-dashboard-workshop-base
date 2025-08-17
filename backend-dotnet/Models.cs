@@ -25,15 +25,8 @@ public record PaginationInfo(
     bool HasPrev
 );
 
-// Represents applied and available filters
-public record FilterInfo(
-    List<string> Applied,
-    Dictionary<string, List<string>> Available
-);
-
 // Represents the main response for the /api/table/data endpoint
 public record TableDataResponse(
     [property: JsonPropertyName("data")] List<Dictionary<string, object?>> Data,
-    [property: JsonPropertyName("pagination")] PaginationInfo Pagination,
-    [property: JsonPropertyName("filters")] FilterInfo Filters
+    [property: JsonPropertyName("pagination")] PaginationInfo Pagination
 );

@@ -4,22 +4,7 @@ import React, { useState, useMemo } from 'react'
 import { useGoogleSheets } from '@/hooks/use-google-sheets'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, ArrowUp, ArrowDown, Search, Loader2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, ArrowUp, ArrowDown, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 
 export function GoogleSheetsTable() {
@@ -27,16 +12,11 @@ export function GoogleSheetsTable() {
   const [pageSize, setPageSize] = useState(100)
   const [sortBy, setSortBy] = useState('Key')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('')
-  const [priorityFilter, setPriorityFilter] = useState<string>('')
 
   const {
     data,
     pagination,
-    filters,
     summary,
-    filterOptions,
     loading,
     error,
     refetch
@@ -45,9 +25,6 @@ export function GoogleSheetsTable() {
     pageSize,
     sortBy,
     sortOrder,
-    search,
-    status: statusFilter || undefined,
-    priority: priorityFilter || undefined,
   })
 
   // 從資料和 summary 中動態獲取所有欄位
@@ -148,63 +125,12 @@ export function GoogleSheetsTable() {
           <h1 className="text-2xl font-bold">Google Sheets Table View</h1>
           {summary && (
             <p className="text-sm text-gray-500">
-              Sheet: {summary.sheet_name} | Total Rows: {summary.total_rows} | Showing {summary.columns.length} columns
+              Sheet: {summary.sheetName} | Total Rows: {summary.totalRows} | Showing {summary.columns.length} columns
             </p>
           )}
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="flex-1">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Search all fields..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value)
-                setPage(1) // Reset to first page on search
-              }}
-              className="pl-10"
-            />
-          </div>
-        </div>
-        
-        <Select value={statusFilter} onValueChange={(value) => {
-          setStatusFilter(value)
-          setPage(1)
-        }}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value=" ">All Status</SelectItem>
-            {filterOptions?.status.map((status) => (
-              <SelectItem key={status} value={status}>
-                {status}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select value={priorityFilter} onValueChange={(value) => {
-          setPriorityFilter(value)
-          setPage(1)
-        }}>
-          <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Filter by Priority" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value=" ">All Priority</SelectItem>
-            {filterOptions?.priority.map((priority) => (
-              <SelectItem key={priority} value={priority}>
-                {priority}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
 
       {/* Table container with fixed height and scroll */}
       <div className="flex-1 min-h-0 rounded-md border bg-white">

@@ -41,14 +41,11 @@ app.MapGet("/api/table/data", async (
     [FromQuery] int page = 1,
     [FromQuery(Name = "page_size")] int pageSize = 100,
     [FromQuery(Name = "sort_by")] string sortBy = "key",
-    [FromQuery(Name = "sort_order")] string sortOrder = "asc",
-    [FromQuery] string? search = null,
-    [FromQuery] string? status = null,
-    [FromQuery] string? priority = null) =>
+    [FromQuery(Name = "sort_order")] string sortOrder = "asc") =>
 {
     try
     {
-        var result = await sheetsService.GetPaginatedDataAsync(page, pageSize, sortBy, sortOrder, search, status, priority);
+        var result = await sheetsService.GetPaginatedDataAsync(page, pageSize, sortBy, sortOrder);
         return Results.Ok(result);
     }
     catch (Exception ex)

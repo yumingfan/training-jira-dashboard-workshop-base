@@ -21,7 +21,7 @@ public class GoogleSheetsService
         _sheetName = configuration["GoogleSheets:SheetName"] ?? throw new InvalidOperationException("SheetName not configured");
     }
 
-    private string GetCsvUrl() => $"https://docs.google.com/spreadsheets/d/{_sheetId}/gviz/tq?tqx=out:csv&sheet={_sheetName}";
+    private string GetCsvUrl() => $"https://docs.google.com/spreadsheets/d/{_sheetId}/gviz/tq?tqx=out:csv&sheet={_sheetName}&range=A:W";
 
     private async Task<List<Dictionary<string, object?>>> FetchAndCacheDataAsync()
     {
@@ -69,11 +69,10 @@ public class GoogleSheetsService
     }
 
     public async Task<TableDataResponse> GetPaginatedDataAsync(
-        int page, int pageSize, string sortBy, string sortOrder, string? search, string? status, string? priority)
+        int page, int pageSize, string sortBy, string sortOrder)
     {
         var allData = await FetchAndCacheDataAsync();
 
-        // TODO: Implement filtering for search, status, priority
         var filteredData = allData;
 
         // Sorting
@@ -99,13 +98,10 @@ public class GoogleSheetsService
             HasPrev: page > 1
         );
 
-        // TODO: Implement filter info
-        var filterInfo = new FilterInfo(new List<string>(), new Dictionary<string, List<string>>());
 
         return new TableDataResponse(
             Data: paginatedData,
-            Pagination: paginationInfo,
-            Filters: filterInfo
+            Pagination: paginationInfo
         );
     }
 }

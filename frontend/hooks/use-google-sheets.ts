@@ -29,28 +29,9 @@ export interface PaginationInfo {
   has_prev: boolean
 }
 
-export interface FilterInfo {
-  applied: string[]
-  available: {
-    status: string[]
-    priority: string[]
-  }
-}
-
 export interface TableDataResponse {
   data: TableRow[]
   pagination: PaginationInfo
-  filters: FilterInfo
-}
-
-export interface FilterOptions {
-  status: string[]
-  priority: string[]
-  assignee: string[]
-  created_date_range: {
-    min: string
-    max: string
-  }
 }
 
 export interface UseGoogleSheetsParams {
@@ -58,17 +39,12 @@ export interface UseGoogleSheetsParams {
   pageSize?: number
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
-  search?: string
-  status?: string
-  priority?: string
 }
 
 export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
   const [data, setData] = useState<TableRow[]>([])
   const [pagination, setPagination] = useState<PaginationInfo | null>(null)
-  const [filters, setFilters] = useState<FilterInfo | null>(null)
   const [summary, setSummary] = useState<TableSummary | null>(null)
-  const [filterOptions, setFilterOptions] = useState<FilterOptions | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -76,17 +52,14 @@ export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
     page = 1,
     pageSize = 100,
     sortBy = 'Key',
-    sortOrder = 'asc',
-    search,
-    status,
-    priority
+    sortOrder = 'asc'
   } = params
 
   // Fetch table summary
   const fetchSummary = useCallback(async () => {
     try {
-      console.log('Fetching summary from:', `${API_BASE_URL}/table/summary`)
-      const response = await fetch(`${API_BASE_URL}/table/summary`)
+      console.log('Fetching summary from:', `${API_BASE_URL}/api/table/summary`)
+      const response = await fetch(`${API_BASE_URL}/api/table/summary`)
       console.log('Summary response status:', response.status)
       if (!response.ok) throw new Error(`Failed to fetch table summary: ${response.status} ${response.statusText}`)
       const data = await response.json()
@@ -98,17 +71,6 @@ export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
     }
   }, [])
 
-  // Fetch filter options
-  const fetchFilterOptions = useCallback(async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/table/filters`)
-      if (!response.ok) throw new Error('Failed to fetch filter options')
-      const data = await response.json()
-      setFilterOptions(data)
-    } catch (err) {
-      console.error('Error fetching filter options:', err)
-    }
-  }, [])
 
   // Fetch table data
   const fetchData = useCallback(async () => {
@@ -123,11 +85,8 @@ export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
         sort_order: sortOrder,
       })
 
-      if (search) queryParams.append('search', search)
-      if (status) queryParams.append('status', status)
-      if (priority) queryParams.append('priority', priority)
 
-      const url = `${API_BASE_URL}/table/data?${queryParams}`
+      const url = `${API_BASE_URL}/api/table/data?${queryParams}`
       console.log('Fetching data from:', url)
       const response = await fetch(url)
       console.log('Data response status:', response.status)
@@ -139,20 +98,18 @@ export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
       const result: TableDataResponse = await response.json()
       setData(result.data)
       setPagination(result.pagination)
-      setFilters(result.filters)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
       console.error('Error fetching data:', err)
     } finally {
       setLoading(false)
     }
-  }, [page, pageSize, sortBy, sortOrder, search, status, priority])
+  }, [page, pageSize, sortBy, sortOrder])
 
   // Initial load
   useEffect(() => {
     fetchSummary()
-    // fetchFilterOptions()
-  }, [fetchSummary, fetchFilterOptions])
+  }, [fetchSummary])
 
   // Fetch data when params change
   useEffect(() => {
@@ -166,9 +123,7 @@ export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
   return {
     data,
     pagination,
-    filters,
     summary,
-    filterOptions,
     loading,
     error,
     refetch

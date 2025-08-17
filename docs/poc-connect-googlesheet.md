@@ -6,6 +6,7 @@
 ## 📊 資料源
 - **Google Sheets URL**: https://docs.google.com/spreadsheets/d/1RmJjghgiV3XWLl2BaxT-md8CP3pqb1Wuk-EhFoqp1VM/edit?usp=sharing
 - **目標工作表**: `rawData`
+- **讀取範圍**: A:W (到 Column W，包含 Project.name)
 - **存取權限**: 公開讀取（有連結的人都能檢視）
 - **資料格式**: CSV 格式讀取
 
@@ -82,9 +83,6 @@ Query Parameters:
   - page_size: int (optional, default: 100, min: 10, max: 500)
   - sort_by: string (optional, default: "ID")
   - sort_order: string (optional, "asc" or "desc", default: "asc")
-  - search: string (optional, 搜尋所有欄位)
-  - status: string (optional, 篩選狀態)
-  - priority: string (optional, 篩選優先級)
 
 Response: {
     "data": [
@@ -107,36 +105,16 @@ Response: {
         "has_next": true,
         "has_prev": false
     },
-    "filters": {
-        "applied": ["status", "priority"],
-        "available": {
-            "status": ["Open", "In Progress", "Closed", "Rejected"],
-            "priority": ["Low", "Medium", "High", "Critical"]
-        }
-    }
 }
 ```
 
-### **5. 取得篩選選項**
-```
-GET /api/table/filters
-Response: {
-    "status": ["Open", "In Progress", "Closed", "Rejected"],
-    "priority": ["Low", "Medium", "High", "Critical"],
-    "assignee": ["John Doe", "Jane Smith", "Bob Johnson"],
-    "created_date_range": {
-        "min": "2024-01-01T00:00:00Z",
-        "max": "2024-12-31T23:59:59Z"
-    }
-}
-```
 
 ## 🔧 實作需求
 
 ### **Google Sheets 連接邏輯**
 ```python
-# CSV 格式讀取 URL
-csv_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={SHEET_NAME}"
+# CSV 格式讀取 URL (限制讀取到 Column W)
+csv_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={SHEET_NAME}&range=A:W"
 
 # 使用 requests + pandas 讀取
 response = requests.get(csv_url)
@@ -159,22 +137,6 @@ def get_paginated_data(df, page=1, page_size=100, sort_by="ID", sort_order="asc"
     return df_sorted.iloc[start_idx:end_idx]
 ```
 
-### **搜尋與篩選邏輯**
-```python
-def apply_filters(df, search=None, status=None, priority=None):
-    if search:
-        # 在所有文字欄位中搜尋
-        mask = df.astype(str).apply(lambda x: x.str.contains(search, case=False, na=False)).any(axis=1)
-        df = df[mask]
-    
-    if status:
-        df = df[df['Status'] == status]
-    
-    if priority:
-        df = df[df['Priority'] == priority]
-    
-    return df
-```
 
 ### **錯誤處理**
 - Google Sheets 連接失敗 → 返回 503 Service Unavailable
@@ -210,21 +172,19 @@ CACHE_DURATION = 300  # 5分鐘
 ### **表格功能需求**
 1. **分頁控制**: 每頁顯示 100 筆資料，支援上一頁/下一頁
 2. **排序功能**: 點擊欄位標題可排序
-3. **搜尋功能**: 全域搜尋框，搜尋所有欄位
-4. **篩選功能**: 下拉選單篩選狀態、優先級等
-5. **響應式設計**: 支援桌面和行動裝置
-6. **載入狀態**: 顯示載入動畫
-7. **錯誤處理**: 顯示錯誤訊息
+3. **響應式設計**: 支援桌面和行動裝置
+4. **載入狀態**: 顯示載入動畫
+5. **錯誤處理**: 顯示錯誤訊息
 
 ### **表格欄位**
 - ID (可點擊排序)
-- Title (可搜尋)
-- Status (可篩選)
-- Priority (可篩選)
-- Assignee (可篩選)
+- Title 
+- Status 
+- Priority 
+- Assignee 
 - Created Date (可排序)
 - Updated Date (可排序)
-- Description (可搜尋)
+- Description
 
 ### **UI/UX 設計**
 - 現代化表格設計
@@ -238,7 +198,7 @@ CACHE_DURATION = 300  # 5分鐘
 ### **後端功能需求**
 1. ✅ 成功連接 Google Sheets 並讀取 rawData 工作表
 2. ✅ 分頁 API 正常運行，每頁預設 100 筆資料
-3. ✅ 支援排序、搜尋、篩選功能
+3. ✅ 支援排序功能
 4. ✅ 支援 CORS 讓前端可以呼叫 API
 5. ✅ 包含錯誤處理和適當的 HTTP 狀態碼
 6. ✅ 提供 Swagger 文件 (FastAPI 自動生成)
@@ -248,17 +208,15 @@ CACHE_DURATION = 300  # 5分鐘
 1. ✅ 表格正確顯示 Google Sheets 資料
 2. ✅ 分頁功能正常運作
 3. ✅ 排序功能正常運作
-4. ✅ 搜尋功能正常運作
-5. ✅ 篩選功能正常運作
-6. ✅ 響應式設計支援各種螢幕尺寸
-7. ✅ 載入狀態和錯誤處理
+4. ✅ 響應式設計支援各種螢幕尺寸
+5. ✅ 載入狀態和錯誤處理
 
 ### **測試需求**
 1. ✅ 可以透過 `http://localhost:8000/docs` 查看 API 文件
 2. ✅ 所有端點都能返回正確格式的 JSON
 3. ✅ Google Sheets 連接異常時能正確處理錯誤
 4. ✅ 前端可以成功呼叫 API 並取得分頁資料
-5. ✅ 表格功能（排序、搜尋、篩選）正常運作
+5. ✅ 表格功能（排序）正常運作
 
 ### **啟動方式**
 ```bash
