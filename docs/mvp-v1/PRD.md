@@ -1,108 +1,162 @@
-# Jira Dashboard MVP v1 - 產品簡化計劃
+# Jira Dashboard MVP v1 - 產品需求文件
 
 ## 概述
-本計劃旨在將現有的 Jira Dashboard 產品簡化為最基礎的版本，移除複雜功能，專注於核心的項目概覽功能。
+Jira Dashboard MVP v1 是一個簡化的專案管理儀表板，整合 Google Sheets 作為資料來源，提供即時的專案健康度監控和 Issue 統計視覺化。本版本專注於核心的統計資訊展示和狀態分布圖表，移除複雜的管理功能。
 
-## 當前產品狀態
-根據圖片顯示，當前產品包含以下主要區域：
-1. **頂部導航欄** - 包含 Jira Dashboard、Google Sheets Table 導航和項目選擇器
-2. **關鍵指標概覽** - 4個統計卡片（總問題數、進行中、已完成、高優先級）
-3. **問題狀態分佈圖表** - 柱狀圖顯示各狀態的問題分佈
-4. **最近活動區域** - 顯示用戶活動時間線
-5. **問題表格區域** - 完整的問題管理表格
-6. **搜索問題區域** - 頂部導航欄中的搜索功能
+## 產品定位
+- **目標用戶**：專案經理、團隊領導、開發團隊成員
+- **使用場景**：快速查看專案整體狀態、Sprint 進度追蹤、Issue 分布分析
+- **核心價值**：一目了然的專案概覽，支援即時資料更新和 Sprint 篩選
 
-## 簡化目標
-移除以下三個複雜區域，簡化為基礎版本：
-- ✅ **Recent Activity 區域** - 最近活動時間線
-- ✅ **Issues 區域** - 問題管理表格
-- ✅ **Search Issues 區域** - 搜索問題功能
+## 已實作功能概述
+本產品已完成開發並投入使用，包含以下核心功能：
 
-## 簡化後的產品結構
+## 核心功能架構
 
-### 保留的功能
-1. **頂部導航欄**
-   - Jira Dashboard 標題
-   - Google Sheets Table 導航
-   - Sprint 選擇器（Sprint 1、Sprint 2 等）
-   - 用戶頭像和下拉選單
+### 1. 頂部導航與控制區
+- **應用程式標題**：Jira Dashboard
+- **Sprint 篩選器**：
+  - 動態載入 Sprint 選項（來源：Google Sheets GetJiraSprintValues 工作表）
+  - 支援「All」、有效 Sprint 名稱、「No Sprints」選項
+  - 即時篩選，選擇後所有資料同步更新
+- **使用者頭像**：簡化的使用者識別
 
-2. **關鍵指標概覽（4個統計卡片）**
-   - Total 卡片數量（總卡片數）
-   - Done 卡片數量（已完成卡片）
-   - Total Story Points（總故事點數）
-   - Done Story Points（完成故事點數）
+### 2. 關鍵指標卡片（Score Cards）
+四個即時統計卡片，資料來源於 Google Sheets rawData 工作表：
 
-3. **問題狀態分佈圖表**
-   - 柱狀圖顯示 To Do、In Progress、In Review、Done 的百分比分佈
+1. **Total Issue Count**
+   - 顯示總 Issue 數量
+   - 圖示：文件圖標
+   - 說明：Total issues tracked
 
-### 移除的功能
-1. **Recent Activity 區域**
-   - 用戶活動時間線
-   - 頭像和活動描述
-   - 時間戳記
+2. **Total Story Points**
+   - 顯示總故事點數（支援小數點）
+   - 圖示：目標圖標
+   - 說明：Total story points
 
-2. **Issues 表格區域**
-   - 完整的問題列表
-   - 過濾和排序功能
-   - 狀態和優先級過濾器
-   - 創建問題按鈕
-   - 問題操作下拉選單
+3. **Total Done Item Count**
+   - 顯示已完成 Issue 數量
+   - 圖示：勾選圖標
+   - 說明：Completed issues
 
-3. **Search Issues 功能**
-   - 頂部導航欄中的搜索輸入框
-   - 搜索圖標
+4. **Done Story Points**
+   - 顯示已完成故事點數（支援小數點）
+   - 圖示：時鐘圖標
+   - 說明：Completed story points
 
-## 技術實現計劃
+### 3. Issue 狀態分布圖表（Bar Chart）
+- **圖表類型**：長條圖
+- **資料來源**：Google Sheets rawData 工作表 Status 欄位
+- **顯示順序**（固定排序）：
+  1. Backlog
+  2. Evaluated
+  3. To Do
+  4. In Progress
+  5. Waiting
+  6. Ready to Verify
+  7. Done
+  8. Invalid
+  9. Routine
+- **互動功能**：
+  - 滑鼠懸停顯示詳細數值和百分比
+  - 顯示總 Issue 數量統計
+- **空狀態處理**：無資料時顯示友善提示
 
-### 前端修改
-1. **修改 `frontend/components/jira-dashboard.tsx`**
-   - 移除 `recentActivity` 數據和相關 JSX
-   - 移除 `issueData` 數據和相關 JSX
-   - 移除搜索相關的 JSX 和狀態
-   - 移除表格相關的組件和樣式
-   - 簡化佈局，調整 grid 結構
+## 技術架構
 
-2. **佈局調整**
-   - 將原本的 3 列佈局改為 2 列佈局
-   - 圖表區域從 `xl:col-span-2` 改為 `xl:col-span-1`
-   - 移除右側的 Recent Activity 卡片
+### 前端技術棧
+- **框架**：Next.js 15 + React 19 + TypeScript
+- **UI 庫**：shadcn/ui + Tailwind CSS
+- **圖表庫**：Recharts（Bar Chart）
+- **狀態管理**：React Hooks（useState, useEffect, useCallback）
+- **API 呼叫**：Custom hooks（useDashboard）
 
-### 數據清理
-1. **移除不需要的數據**
-   - `issueData` 數組
-   - `recentActivity` 數組
-   - `priorityIcons` 和 `issueTypeIcons` 對象
-   - 過濾相關的 state 和邏輯
+### 後端技術棧
+- **.NET Core**：ASP.NET Core Web API
+- **資料來源**：Google Sheets（CSV API）
+- **快取機制**：記憶體快取（5分鐘過期）
+- **API 設計**：RESTful API 端點
 
-2. **保留必要的數據**
-   - `chartData` 用於圖表顯示
-   - `stats` 計算邏輯（需要調整為靜態數據）
+### 資料流架構
+1. **Google Sheets** → 2. **.NET API** → 3. **React Frontend**
 
-## 預期效果
-簡化後的產品將：
-- 載入速度更快
-- 界面更簡潔
-- 專注於項目概覽
-- 減少用戶認知負擔
-- 便於後續功能迭代
+### API 端點
+1. **`GET /api/dashboard/stats`**
+   - 支援 Sprint 篩選參數
+   - 返回：total_issues, total_story_points, done_issues, done_story_points
 
-## 實施步驟
-1. 備份當前代碼
-2. 修改 `jira-dashboard.tsx` 組件
-3. 移除不需要的數據和狀態
-4. 調整佈局和樣式
-5. 測試簡化後的功能
-6. 更新相關文檔
+2. **`GET /api/dashboard/status-distribution`**
+   - 支援 Sprint 篩選參數
+   - 返回：各狀態的 count 和 percentage（按固定順序）
 
-## 風險評估
-- **低風險**：主要是前端 UI 簡化，不涉及後端邏輯
-- **影響範圍**：僅影響主儀表板頁面，不影響其他功能
-- **回滾方案**：可以從 git 歷史恢復原始版本
+3. **`GET /api/table/sprints`**
+   - 返回：可用的 Sprint 選項清單
 
-## 後續規劃
-簡化完成後，可以考慮：
-- 添加新的核心功能
-- 優化現有圖表和統計
-- 根據用戶反饋調整佈局
-- 逐步添加必要的功能
+### Google Sheets 整合
+- **主要工作表**：rawData（A:W 欄位範圍）
+- **Sprint 工作表**：GetJiraSprintValues（Column C）
+- **存取方式**：公開 CSV API
+- **Story Points 偵測**：自動尋找包含 "story" 和 "point" 的欄位名稱
+- **Done 狀態偵測**：包含 "done", "resolved", "closed" 的狀態值
+
+## 使用者體驗設計
+
+### 載入狀態
+- **統計卡片**：顯示載入動畫和 "--" 佔位符
+- **狀態分布圖表**：顯示載入動畫和載入訊息
+- **錯誤處理**：顯示錯誤訊息和重試按鈕
+
+### 響應式設計
+- **桌面版**：4欄統計卡片 + 完整圖表
+- **平板版**：2欄統計卡片 + 完整圖表
+- **手機版**：1欄統計卡片 + 適應圖表
+
+### 視覺設計
+- **設計系統**：shadcn/ui 元件庫
+- **顏色主題**：藍色主題（#3b82f6）
+- **圖示系統**：Lucide React 圖示
+- **字體**：系統預設字體棧
+
+## 效能特性
+
+### 快取策略
+- **後端快取**：5分鐘記憶體快取，避免頻繁請求 Google Sheets
+- **前端最佳化**：React Hooks 管理狀態，避免不必要的重新渲染
+
+### 載入時間目標
+- **首次載入**：< 3 秒
+- **資料更新**：< 1 秒
+- **Sprint 切換**：< 1 秒
+
+## 部署與維運
+
+### 開發環境
+- **前端**：http://localhost:3000
+- **後端**：http://localhost:8001
+- **Docker 支援**：完整 Docker 開發環境
+
+### 監控指標
+- **可用性**：API 端點健康檢查
+- **效能**：API 回應時間
+- **錯誤率**：API 錯誤統計
+
+## 產品成功指標
+
+### 功能完整性
+- ✅ 4個關鍵指標卡片正常運作
+- ✅ 狀態分布圖表正確顯示
+- ✅ Sprint 篩選功能正常
+- ✅ 即時資料更新正常
+- ✅ 固定狀態排序正確
+
+### 使用者體驗
+- ✅ 載入狀態友善提示
+- ✅ 錯誤處理機制完善
+- ✅ 響應式設計適配
+- ✅ 互動回饋即時
+
+## 版本資訊
+- **當前版本**：MVP v1.0
+- **發布狀態**：已完成開發並投入使用
+- **最後更新**：2025-08-17
+- **維護團隊**：開發團隊
