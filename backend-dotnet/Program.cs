@@ -100,3 +100,6 @@ app.MapGet("/api/dashboard/status-distribution", async (
 });
 
 app.Run();
+
+// 讓測試可以存取 Program 類別
+public partial class Program { }

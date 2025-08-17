@@ -80,9 +80,9 @@ describe('Home Page', () => {
 ## 後端測試 (Backend Testing)
 
 ### 測試框架
-- **pytest**: Python 測試框架
-- **pytest-asyncio**: 非同步測試支援
-- **httpx**: 測試 HTTP 客戶端
+- **xUnit**: .NET 測試框架
+- **ASP.NET Core Test Host**: Web API 測試工具
+- **Microsoft.AspNetCore.Mvc.Testing**: 整合測試支援
 
 ### 執行測試 (Docker 環境)
 
@@ -90,37 +90,50 @@ describe('Home Page', () => {
 
 ```bash
 # 方式一：從外部執行容器內的測試
-make test-backend
+make test-backend-dotnet
 
 # 方式二：進入容器執行測試
-make shell-backend
-pytest
+make shell-backend-dotnet
+dotnet test
 
-# 執行特定測試檔案
-pytest tests/test_main.py
+# 執行特定測試專案
+dotnet test --filter "TestCategory=Unit"
 
 # 顯示詳細輸出
-pytest -v
+dotnet test --verbosity normal
 ```
 
 ### 測試檔案結構
 ```
-backend/
-├── tests/
-│   ├── __init__.py
-│   ├── conftest.py         # 共用測試配置和 fixtures
-│   └── test_main.py        # API 端點測試
-└── pytest.ini              # pytest 配置
+backend-dotnet/
+├── Tests/
+│   ├── UnitTests/
+│   │   └── GoogleSheetsServiceTests.cs    # 服務單元測試
+│   ├── IntegrationTests/
+│   │   └── ApiControllerTests.cs          # API 整合測試
+│   └── TestData/
+│       └── sample-data.csv                # 測試資料
+├── backend-dotnet.csproj                  # 主要專案檔
+└── backend-dotnet.Tests.csproj            # 測試專案檔
 ```
 
 ### 範例測試
-```python
-# tests/test_main.py
-def test_health_check():
-    """測試健康檢查端點"""
-    response = client.get("/api/health")
-    assert response.status_code == 200
-    assert response.json()["status"] == "healthy"
+```csharp
+// Tests/IntegrationTests/ApiControllerTests.cs
+[Test]
+public async Task HealthCheck_ReturnsHealthyStatus()
+{
+    // Arrange
+    var client = _factory.CreateClient();
+    
+    // Act
+    var response = await client.GetAsync("/api/health");
+    
+    // Assert
+    response.EnsureSuccessStatusCode();
+    var content = await response.Content.ReadAsStringAsync();
+    Assert.That(content, Contains.Substring("healthy"));
+}
 ```
 
 ## Windows 學員測試指令
@@ -129,15 +142,15 @@ def test_health_check():
 # 前端測試
 workshop.bat test-frontend
 
-# 後端測試
-workshop.bat test-backend
+# 後端測試 (.NET)
+workshop.bat test-backend-dotnet
 
 # 或進入容器執行
 workshop.bat shell-frontend
 npm test
 
-workshop.bat shell-backend
-pytest
+workshop.bat shell-backend-dotnet
+dotnet test
 ```
 
 ## 持續整合 (CI)
@@ -165,11 +178,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-dotnet@v3
         with:
-          python-version: '3.11'
-      - run: cd backend && pip install -r requirements.txt
-      - run: cd backend && pytest
+          dotnet-version: '8.0'
+      - run: cd backend-dotnet && dotnet restore
+      - run: cd backend-dotnet && dotnet test
 ```
 
 ## 測試最佳實踐
@@ -189,8 +202,8 @@ jobs:
 
 ### 後端測試問題
 
-**問題**: `ModuleNotFoundError: No module named 'main'`
-**解決**: 確保在 backend 目錄下執行 pytest，或設定 PYTHONPATH
+**問題**: `The test source file "..." cannot be found`
+**解決**: 確保在 backend-dotnet 目錄下執行 dotnet test，並確認測試專案檔案存在
 
 ## 下一步
 
