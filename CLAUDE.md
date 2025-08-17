@@ -19,29 +19,34 @@ This is a Jira Dashboard training workshop application demonstrating AI-driven f
 ```
 training-jira-dashboard-workshop-base/
 ├── frontend/                    # Next.js 15 + React 19 + TypeScript
-├── backend/                     # Node.js + Express + TypeScript
+├── backend/                     # Python FastAPI (port 8000)
+├── backend-dotnet/              # .NET 8 Web API (port 8001)
 ├── shared/                      # Shared TypeScript types and constants
 ├── mock-data/                   # JSON files for development data
-├── workshop-guide/              # Step-by-step tutorial documentation
 ├── docs/                        # Technical documentation
 └── scripts/                     # Development scripts
 ```
 
 ## Development Commands
 
-**Root level (runs both frontend and backend):**
-- **Development server**: `npm run dev` (starts both frontend and backend)
-- **Build**: `npm run build` (builds both applications)
-- **Setup**: `npm run setup` (installs all dependencies)
+**Docker 環境 (推薦):**
+- **啟動所有服務**: `make workshop-start` (啟動前端 + 雙後端)
+- **停止所有服務**: `make workshop-stop`
+- **健康檢查**: `make health`
+- **執行所有測試**: `make test`
 
-**Frontend specific (`cd frontend`):**
-- **Development**: `npm run dev` (Next.js dev server on :3000)
-- **Build**: `npm run build`
-- **Linting**: `npm run lint`
+**前端 (Next.js):**
+- **開發伺服器**: `cd frontend && npm run dev` (port 3000)
+- **測試**: `make test-frontend`
 
-**Backend specific (`cd backend`):**
-- **Development**: `npm run dev` (Express server on :3001)
-- **Build**: `npm run build` (TypeScript compilation)
+**Python 後端 (FastAPI):**
+- **開發伺服器**: port 8000
+- **API 文件**: `http://localhost:8000/docs`
+- **測試**: `make test-backend`
+
+**.NET 後端 (Web API):**
+- **開發伺服器**: port 8001
+- **測試**: `make test-backend-dotnet`
 
 ## Architecture
 
@@ -52,19 +57,32 @@ training-jira-dashboard-workshop-base/
 - **Key Component**: `frontend/components/jira-dashboard.tsx` - Main dashboard with issue tracking, filtering, charts, and activity feeds
 - **API Integration**: Custom hooks in `frontend/hooks/use-api.ts` for backend communication
 
-### Backend (Express API)
-- **Framework**: Node.js + Express + TypeScript
-- **Data Source**: JSON files in `/mock-data` directory
-- **API Structure**: RESTful endpoints for issues, projects, users
-- **Key Files**:
-  - `backend/src/app.ts`: Express app configuration
-  - `backend/src/controllers/issueController.ts`: Issue CRUD operations
-  - `backend/src/models/DataService.ts`: JSON file data access layer
+### Backend (雙後端架構)
 
-### Shared Data
-- **Mock Data**: Structured JSON files in `/mock-data` directory
-- **API Integration**: Frontend consumes backend APIs instead of hardcoded data
-- **Real-time Features**: Create, update, delete operations with immediate UI updates
+#### Python 後端 (FastAPI)
+- **Framework**: Python FastAPI
+- **Port**: 8000
+- **Data Source**: Google Sheets API integration
+- **API 文件**: http://localhost:8000/docs
+- **Key Files**:
+  - `backend/main.py`: FastAPI 應用程式配置
+  - `backend/services/sheets_service.py`: Google Sheets 服務
+  - `backend/models.py`: 資料模型定義
+
+#### .NET 後端 (Web API)
+- **Framework**: .NET 8 Web API
+- **Port**: 8001
+- **Data Source**: Google Sheets API (CSV format)
+- **Key Files**:
+  - `backend-dotnet/Program.cs`: Web API 配置
+  - `backend-dotnet/GoogleSheetsService.cs`: Google Sheets 服務
+  - `backend-dotnet/Models.cs`: 資料模型定義
+  - `backend-dotnet/SimpleTests.cs`: 基本測試案例
+
+### Data Integration
+- **Google Sheets**: 兩個後端都整合 Google Sheets 作為資料來源
+- **API 格式**: RESTful endpoints for dashboard data, table data, and filtering
+- **前端整合**: Frontend 可選擇使用任一後端 API
 
 ## Configuration Files
 
@@ -74,22 +92,31 @@ training-jira-dashboard-workshop-base/
 - `frontend/next.config.mjs`: Next.js config (ESLint/TypeScript errors ignored for workshop)
 - `frontend/.env.local`: Environment variables (API_URL)
 
-**Backend:**
-- `backend/tsconfig.json`: TypeScript configuration for Node.js
-- `backend/.env`: Environment variables (PORT, NODE_ENV)
+**Python 後端:**
+- `backend/config.py`: 配置檔案
+- `backend/requirements.txt`: Python 依賴套件
+- `backend/pytest.ini`: 測試配置
+
+**.NET 後端:**
+- `backend-dotnet/backend-dotnet.csproj`: 專案檔案與 NuGet 套件
+- `backend-dotnet/appsettings.json`: 應用程式配置
 
 ## Workshop Learning Path
 
-The repository includes a complete workshop guide in `/workshop-guide/`:
-1. Environment setup and repository structure
-2. Frontend exploration (v0.dev generated components)
-3. Backend API development (Express + TypeScript)
-4. API integration and real-time features
+本專案包含完整的技術文件在 `/docs/` 目錄：
+1. 環境設定與 Docker 容器化
+2. 前端探索 (Next.js + shadcn/ui)
+3. 雙後端 API 開發 (Python FastAPI + .NET Web API)
+4. Google Sheets 整合與資料處理
+5. 測試策略 (前端 Jest + 後端 pytest/xUnit)
 
 ## Development Notes
 
-- **Package Manager**: Uses npm workspaces for monorepo management
-- **API Base URL**: Frontend calls backend at `http://localhost:3002/api`
-- **Data Persistence**: Mock data changes are saved to JSON files
-- **Error Handling**: Comprehensive error handling in API calls and UI
-- **TypeScript**: Fully typed throughout frontend and backend
+- **容器化**: 使用 Docker Compose 管理多服務環境
+- **API 端點**:
+  - Frontend: `http://localhost:3000`
+  - Python 後端: `http://localhost:8000`
+  - .NET 後端: `http://localhost:8001`
+- **資料來源**: Google Sheets API 整合，支援即時資料存取
+- **測試覆蓋**: 前端 Jest + Python pytest + .NET xUnit
+- **開發工具**: Makefile (Linux/Mac) + workshop.bat (Windows) 提供統一指令介面
