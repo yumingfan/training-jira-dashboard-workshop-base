@@ -30,3 +30,24 @@ public record TableDataResponse(
     [property: JsonPropertyName("data")] List<Dictionary<string, object?>> Data,
     [property: JsonPropertyName("pagination")] PaginationInfo Pagination
 );
+
+// Dashboard MVP Models
+public record DashboardStats(
+    [property: JsonPropertyName("total_issues")] int TotalIssues,
+    [property: JsonPropertyName("total_story_points")] double TotalStoryPoints,
+    [property: JsonPropertyName("done_issues")] int DoneIssues,
+    [property: JsonPropertyName("done_story_points")] double DoneStoryPoints,
+    [property: JsonPropertyName("last_updated")] DateTime LastUpdated
+);
+
+public record StatusDistributionItem(
+    [property: JsonPropertyName("status")] string Status,
+    [property: JsonPropertyName("count")] int Count,
+    [property: JsonPropertyName("percentage")] double Percentage
+);
+
+public record StatusDistribution(
+    [property: JsonPropertyName("distribution")] List<StatusDistributionItem> Distribution,
+    [property: JsonPropertyName("total_count")] int TotalCount,
+    [property: JsonPropertyName("last_updated")] DateTime LastUpdated
+);

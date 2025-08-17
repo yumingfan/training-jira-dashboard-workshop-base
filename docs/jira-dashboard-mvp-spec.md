@@ -23,40 +23,28 @@
   - 支援多專案切換，方便跨專案管理
   
 - **技術影響**: 
-  - 需要整合 Jira API 或使用模擬資料
+  - 整合 Google Sheets 作為真實資料源
   - 前端需要實作響應式設計和資料視覺化
-  - 後端需要提供資料聚合和快取機制
+  - 後端需要提供資料聚合、統計計算和快取機制
 
 ## 🎯 需求規格
 
 ### 核心功能需求
 
-1. **儀表板總覽視圖**: 
-   - 顯示關鍵指標卡片（總 Issue 數、進行中、已完成、高優先級）
+1. **關鍵指標卡片（Score Cards）**: 
+   - **Total Issue Count**: 總 Issue 數量統計
+   - **Total Story Points**: 總故事點數統計
+   - **Total Done Item Count**: 已完成 Issue 數量統計
+   - **Total Done Item Story Points**: 已完成 Issue 故事點數統計
+   - 數據來源：Google Sheets rawData 工作表即時統計
    - 即時更新數據，反映最新狀態
-   - 支援點擊卡片深入查看詳細資訊
 
-2. **Issue 狀態分布圖表**: 
+2. **Issue 狀態分布圖表（Bar Chart）**: 
    - 使用長條圖展示各狀態的 Issue 分布
+   - 數據來源：Google Sheets rawData 工作表 Status 欄位統計
    - 支援滑鼠懸停顯示詳細數值
-   - 可點擊圖表區域篩選對應狀態的 Issues
 
-3. **Issue 列表管理**: 
-   - 表格化顯示所有 Issues，包含關鍵欄位
-   - 提供分頁機制處理大量資料
-   - 支援 Sprint 篩選功能，可依據 Sprint 狀態過濾 Issues
-
-4. **最近活動追蹤**: 
-   - 顯示團隊成員的最近操作記錄
-   - 包含操作類型、Issue 編號、時間戳記
-   - 自動更新最新活動
-
-5. **專案切換功能**: 
-   - 頂部下拉選單切換不同專案
-   - 記憶使用者最後選擇的專案
-   - 切換時自動更新所有資料
-
-6. **Sprint 篩選功能**:
+3. **Sprint 篩選功能**:
    - 提供 Sprint 下拉選單篩選器
    - 動態載入 Sprint 選項（來源：GetJiraSprintValues sheet 的 Column C）
    - 篩選邏輯：
@@ -69,10 +57,9 @@
 ### 使用者體驗需求
 
 - **操作流程**: 
-  - 進入頁面即可看到專案總覽
-  - 透過分頁瀏覽 Issues 列表
-  - 使用 Sprint 下拉選單快速篩選特定 Sprint 的 Issues
-  - 單一頁面完成大部分查詢操作
+  - 進入頁面即可看到 4 個關鍵指標卡片和狀態分布圖表
+  - 使用 Sprint 下拉選單即時篩選資料
+  - 選擇 Sprint 後，所有指標和圖表同步更新
   
 - **介面需求**: 
   - 清晰的視覺層次，重要資訊優先顯示
@@ -87,17 +74,18 @@
 ### 邊界與限制
 
 - **功能邊界**: 
-  - 不包含 Issue 的建立和編輯功能（僅查看）
+  - MVP 版本僅包含 4 個關鍵指標卡片和 1 個狀態分布圖表
+  - 不包含優先級分布圖表、最近活動追蹤、Issue 列表管理
+  - 不包含 Issue 的建立和編輯功能（僅查看統計）
   - 不包含使用者權限管理
-  - 不包含即時通知功能
   
 - **技術限制**: 
-  - MVP 階段使用模擬資料，不直接連接 Jira API
+  - 使用 Google Sheets 作為資料源，不直接連接 Jira API
   - 暫不支援行動裝置優化
-  - 資料更新頻率受限於後端快取策略
+  - 資料更新頻率受限於後端快取策略（5分鐘快取）
   
 - **時程限制**: 
-  - MVP 版本預計 2 週完成
+  - MVP 版本預計 1 週完成
   - 包含前後端開發和基本測試
 
 ## 🔧 技術考量
@@ -105,19 +93,21 @@
 ### 影響範圍
 
 - **前端變更**: 
-  - 新增 `/components/jira-dashboard.tsx` 主要元件
-  - 整合 Recharts 圖表庫
+  - 簡化 `/components/jira-dashboard.tsx` 主要元件，僅包含 4 個 Score Cards 和 1 個 Bar Chart
+  - 整合 Recharts 圖表庫（僅長條圖）
   - 使用 shadcn/ui 元件系統
-  - 新增自訂 hooks 管理資料狀態
+  - 新增自訂 hooks 管理 Dashboard 資料狀態
   
 - **後端變更**: 
-  - 建立 Issue 相關的 API 端點
-  - 實作資料聚合邏輯
+  - 建立 2 個 Dashboard API 端點：統計資料 + 狀態分布
+  - 實作 Google Sheets 資料統計計算邏輯（Issue Count、Story Points）
   - 加入記憶體快取機制
+  - 支援 Sprint 篩選參數
   
-- **資料庫變更**: 
-  - MVP 階段使用 JSON 檔案模擬
-  - 未來可能整合真實資料庫
+- **資料來源變更**: 
+  - 使用 Google Sheets 作為真實資料源
+  - rawData 工作表提供 Issue 資料和 Story Points 資料
+  - GetJiraSprintValues 工作表提供 Sprint 選項
 
 ### 相關資源
 

@@ -123,6 +123,52 @@ Response: {
 }
 ```
 
+## 🎯 Dashboard MVP API 端點
+
+### **6. 取得 Dashboard 統計資料（MVP 版本）**
+```
+GET /api/dashboard/stats
+Query Parameters:
+  - sprint: string (optional, Sprint 篩選條件)
+
+Response: {
+    "total_issues": 1250,
+    "total_story_points": 89.5,
+    "done_issues": 485,
+    "done_story_points": 42.0,
+    "last_updated": "2024-01-01T12:00:00Z"
+}
+```
+
+### **7. 取得 Issue 狀態分布資料（MVP 版本）**
+```
+GET /api/dashboard/status-distribution
+Query Parameters:
+  - sprint: string (optional, Sprint 篩選條件)
+
+Response: {
+    "distribution": [
+        {
+            "status": "Done",
+            "count": 485,
+            "percentage": 38.8
+        },
+        {
+            "status": "In Progress", 
+            "count": 85,
+            "percentage": 6.8
+        },
+        {
+            "status": "To Do",
+            "count": 680,
+            "percentage": 54.4
+        }
+    ],
+    "total_count": 1250,
+    "last_updated": "2024-01-01T12:00:00Z"
+}
+```
+
 
 ## 🔧 實作需求
 
@@ -190,6 +236,61 @@ def apply_sprint_filter(df, sprint_filter=None):
         return df[df['sprint'] == sprint_filter]
 ```
 
+### **Dashboard MVP 統計計算邏輯**
+```python
+def calculate_dashboard_stats_mvp(df):
+    """計算 Dashboard MVP 關鍵指標"""
+    total_issues = len(df)
+    
+    # 計算總故事點數（假設 Story Points 欄位名稱為 'story_points' 或 'storypoints'）
+    story_points_col = None
+    for col in df.columns:
+        if 'story' in col.lower() and 'point' in col.lower():
+            story_points_col = col
+            break
+    
+    total_story_points = 0
+    if story_points_col:
+        total_story_points = df[story_points_col].fillna(0).sum()
+    
+    # 計算已完成的 Issues（Done 狀態）
+    done_df = df[df['status'].str.contains('Done|done|Resolved|resolved', na=False)]
+    done_issues = len(done_df)
+    
+    # 計算已完成的故事點數
+    done_story_points = 0
+    if story_points_col:
+        done_story_points = done_df[story_points_col].fillna(0).sum()
+    
+    return {
+        "total_issues": total_issues,
+        "total_story_points": float(total_story_points),
+        "done_issues": done_issues,
+        "done_story_points": float(done_story_points),
+        "last_updated": datetime.now().isoformat()
+    }
+
+def calculate_status_distribution_mvp(df):
+    """計算 Issue 狀態分布（MVP 版本）"""
+    status_counts = df['status'].value_counts()
+    total_count = len(df)
+    
+    distribution = []
+    for status, count in status_counts.items():
+        percentage = round((count / total_count) * 100, 1)
+        distribution.append({
+            "status": status,
+            "count": int(count),
+            "percentage": percentage
+        })
+    
+    return {
+        "distribution": distribution,
+        "total_count": total_count,
+        "last_updated": datetime.now().isoformat()
+    }
+```
+
 
 ### **錯誤處理**
 - Google Sheets 連接失敗 → 返回 503 Service Unavailable
@@ -250,32 +351,74 @@ CACHE_DURATION = 300  # 5分鐘
 ## ✅ 驗收標準
 
 ### **後端功能需求**
+
+#### **Google Sheets Table API**
 1. ✅ 成功連接 Google Sheets 並讀取 rawData 工作表
 2. ✅ 分頁 API 正常運行，每頁預設 100 筆資料
 3. ✅ 支援排序功能
-4. 🔄 支援 Sprint 篩選功能，讀取 GetJiraSprintValues 工作表
-5. 🔄 提供 Sprint 選項 API 端點
+4. ✅ 支援 Sprint 篩選功能，讀取 GetJiraSprintValues 工作表
+5. ✅ 提供 Sprint 選項 API 端點
 6. ✅ 支援 CORS 讓前端可以呼叫 API
 7. ✅ 包含錯誤處理和適當的 HTTP 狀態碼
 8. ✅ 提供 Swagger 文件 (FastAPI 自動生成)
 9. ✅ 資料快取機制避免頻繁請求 Google Sheets
 
+#### **Dashboard MVP API**
+10. 🔄 提供 Dashboard 統計資料 API 端點 (`/api/dashboard/stats`)
+    - 支援 Sprint 篩選參數
+    - 返回：總 Issue 數、總故事點數、完成 Issue 數、完成故事點數
+11. 🔄 提供 Issue 狀態分布 API 端點 (`/api/dashboard/status-distribution`)
+    - 支援 Sprint 篩選參數
+    - 返回：各狀態的數量和百分比
+12. 🔄 所有 Dashboard API 端點使用相同的資料快取機制
+13. 🔄 Dashboard API 提供適當的統計計算和資料聚合
+
 ### **前端功能需求**
+
+#### **Google Sheets Table 頁面**
 1. ✅ 表格正確顯示 Google Sheets 資料
 2. ✅ 分頁功能正常運作
 3. ✅ 排序功能正常運作
-4. 🔄 Sprint 篩選下拉選單正常運作
-5. 🔄 Sprint 篩選與分頁的正確整合
+4. ✅ Sprint 篩選下拉選單正常運作
+5. ✅ Sprint 篩選與分頁的正確整合
 6. ✅ 響應式設計支援各種螢幕尺寸
 7. ✅ 載入狀態和錯誤處理
 
+#### **Jira Dashboard MVP 頁面整合**
+8. 🔄 Dashboard 主頁面整合 Google Sheets 資料來源
+9. 🔄 4 個關鍵指標卡片顯示即時統計資料：
+   - Total Issue Count
+   - Total Story Points  
+   - Total Done Item Count
+   - Total Done Item Story Points
+10. 🔄 Issue 狀態分布圖表（長條圖）正常顯示
+11. 🔄 Sprint 下拉選單篩選功能正常運作
+12. 🔄 選擇 Sprint 後，所有指標和圖表同步更新
+13. 🔄 圖表支援滑鼠懸停顯示詳細數值
+14. 🔄 Dashboard 頁面載入狀態和錯誤處理
+
 ### **測試需求**
-1. ✅ 可以透過 `http://localhost:8000/docs` 查看 API 文件
-2. ✅ 所有端點都能返回正確格式的 JSON
+
+#### **API 端點測試**
+1. ✅ 可以透過 `http://localhost:8001/docs` 查看 API 文件（.NET backend）
+2. ✅ 所有 Table API 端點都能返回正確格式的 JSON
 3. ✅ Google Sheets 連接異常時能正確處理錯誤
 4. ✅ 前端可以成功呼叫 API 並取得分頁資料
-5. ✅ 表格功能（排序）正常運作
-6. 🔄 Sprint 篩選功能正常運作
+5. ✅ 表格功能（排序、Sprint 篩選）正常運作
+6. 🔄 Dashboard Stats API 端點返回正確的 JSON 格式
+   - 包含：total_issues, total_story_points, done_issues, done_story_points
+7. 🔄 Dashboard Status Distribution API 端點返回正確的 JSON 格式
+   - 包含：各狀態的 count 和 percentage
+8. 🔄 Dashboard API 支援 Sprint 篩選參數
+9. 🔄 Dashboard API 統計計算結果正確
+10. 🔄 Dashboard API 快取機制運作正常
+
+#### **整合測試**
+11. 🔄 Jira Dashboard 頁面成功載入 Google Sheets 資料
+12. 🔄 4 個 Score Cards 顯示正確的統計數值
+13. 🔄 狀態分布圖表資料與 Google Sheets 資料一致
+14. 🔄 Sprint 篩選功能在 Dashboard 頁面正常運作
+15. 🔄 Dashboard 與 Google Sheets Table 資料來源同步
 
 ### **啟動方式**
 ```bash
