@@ -41,12 +41,26 @@ app.MapGet("/api/table/data", async (
     [FromQuery] int page = 1,
     [FromQuery(Name = "page_size")] int pageSize = 100,
     [FromQuery(Name = "sort_by")] string sortBy = "key",
-    [FromQuery(Name = "sort_order")] string sortOrder = "asc") =>
+    [FromQuery(Name = "sort_order")] string sortOrder = "asc",
+    [FromQuery] string? sprint = null) =>
 {
     try
     {
-        var result = await sheetsService.GetPaginatedDataAsync(page, pageSize, sortBy, sortOrder);
+        var result = await sheetsService.GetPaginatedDataAsync(page, pageSize, sortBy, sortOrder, sprint);
         return Results.Ok(result);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
+});
+
+app.MapGet("/api/table/sprints", async (GoogleSheetsService sheetsService) => 
+{
+    try
+    {
+        var sprints = await sheetsService.GetSprintOptionsAsync();
+        return Results.Ok(new { sprints });
     }
     catch (Exception ex)
     {

@@ -44,6 +44,7 @@
 3. **Issue 列表管理**: 
    - 表格化顯示所有 Issues，包含關鍵欄位
    - 提供分頁機制處理大量資料
+   - 支援 Sprint 篩選功能，可依據 Sprint 狀態過濾 Issues
 
 4. **最近活動追蹤**: 
    - 顯示團隊成員的最近操作記錄
@@ -55,11 +56,22 @@
    - 記憶使用者最後選擇的專案
    - 切換時自動更新所有資料
 
+6. **Sprint 篩選功能**:
+   - 提供 Sprint 下拉選單篩選器
+   - 動態載入 Sprint 選項（來源：GetJiraSprintValues sheet 的 Column C）
+   - 篩選邏輯：
+     - "All" 選項：顯示全部資料（預設選項）
+     - 忽略值為 "N/A" 的 Sprint
+     - 顯示所有有效的 Sprint Name
+     - "No Sprints" 選項：篩選 Sprint 欄位為空白的項目
+   - 選擇 Sprint 後即時更新 Issues 列表
+
 ### 使用者體驗需求
 
 - **操作流程**: 
   - 進入頁面即可看到專案總覽
   - 透過分頁瀏覽 Issues 列表
+  - 使用 Sprint 下拉選單快速篩選特定 Sprint 的 Issues
   - 單一頁面完成大部分查詢操作
   
 - **介面需求**: 

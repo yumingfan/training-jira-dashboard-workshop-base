@@ -131,6 +131,32 @@ workshop.bat workshop-stop
 4. **測試 API 變更**：在瀏覽器或 API 工具中訪問 `http://localhost:8001` 來驗證你的修改。
 5. **結束開發**：完成後，在終端機按下 `Ctrl + C` 即可停止服務。
 
+### 🔄 何時需要重新建構服務？
+
+**即時生效 (無需重啟)：**
+- ✅ 修改前端檔案 (`.tsx`, `.ts`, `.css`) → 瀏覽器自動更新
+- ✅ 修改 Python 後端檔案 (`.py`) → API 自動重新載入  
+- ✅ 修改 .NET 後端檔案 (`.cs`) → dotnet watch 自動重新編譯
+
+**需要重啟服務：**
+- 🔄 修改 Docker 相關檔案 (`Dockerfile`, `docker-compose.yml`)
+- 🔄 新增套件依賴 (`package.json`, `requirements.txt`, `.csproj`)
+- 🔄 修改環境變數 (`.env` 檔案)
+- 🔄 新增 API 端點到 .NET 後端 (`Program.cs` 的路由設定)
+
+**重啟指令：**
+```bash
+# 只重啟特定服務 (較快)
+docker-compose restart backend-dotnet    # 重啟 .NET 後端
+docker-compose restart frontend          # 重啟前端
+
+# 重新建構並重啟 (有新增套件時)
+docker-compose build backend-dotnet && docker-compose restart backend-dotnet
+
+# 完全重置 (故障排除)
+make workshop-reset
+```
+
 ### 🛠️ 常用指令
 
 **macOS/Linux 學員:**
@@ -164,6 +190,13 @@ workshop.bat logs
 
 # 重置環境 (故障排除用)
 workshop.bat workshop-reset
+
+# 重啟特定服務 (與 macOS/Linux 相同)
+docker-compose restart backend-dotnet    # 重啟 .NET 後端
+docker-compose restart frontend          # 重啟前端
+
+# 重新建構並重啟
+docker-compose build backend-dotnet && docker-compose restart backend-dotnet
 
 # 查看服務狀態
 workshop.bat ps

@@ -21,12 +21,12 @@ export interface TableRow {
 }
 
 export interface PaginationInfo {
-  current_page: number
-  page_size: number
-  total_pages: number
-  total_records: number
-  has_next: boolean
-  has_prev: boolean
+  currentPage: number
+  pageSize: number
+  totalPages: number
+  totalRecords: number
+  hasNext: boolean
+  hasPrev: boolean
 }
 
 export interface TableDataResponse {
@@ -39,12 +39,14 @@ export interface UseGoogleSheetsParams {
   pageSize?: number
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
+  sprint?: string
 }
 
 export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
   const [data, setData] = useState<TableRow[]>([])
   const [pagination, setPagination] = useState<PaginationInfo | null>(null)
   const [summary, setSummary] = useState<TableSummary | null>(null)
+  const [sprintOptions, setSprintOptions] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -52,7 +54,8 @@ export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
     page = 1,
     pageSize = 100,
     sortBy = 'Key',
-    sortOrder = 'asc'
+    sortOrder = 'asc',
+    sprint
   } = params
 
   // Fetch table summary
@@ -71,6 +74,17 @@ export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
     }
   }, [])
 
+  // Fetch sprint options
+  const fetchSprintOptions = useCallback(async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/table/sprints`)
+      if (!response.ok) throw new Error('Failed to fetch sprint options')
+      const data = await response.json()
+      setSprintOptions(data.sprints || [])
+    } catch (err) {
+      console.error('Error fetching sprint options:', err)
+    }
+  }, [])
 
   // Fetch table data
   const fetchData = useCallback(async () => {
@@ -84,6 +98,10 @@ export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
         sort_by: sortBy,
         sort_order: sortOrder,
       })
+
+      if (sprint) {
+        queryParams.append('sprint', sprint)
+      }
 
 
       const url = `${API_BASE_URL}/api/table/data?${queryParams}`
@@ -104,12 +122,13 @@ export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
     } finally {
       setLoading(false)
     }
-  }, [page, pageSize, sortBy, sortOrder])
+  }, [page, pageSize, sortBy, sortOrder, sprint])
 
   // Initial load
   useEffect(() => {
     fetchSummary()
-  }, [fetchSummary])
+    fetchSprintOptions()
+  }, [fetchSummary, fetchSprintOptions])
 
   // Fetch data when params change
   useEffect(() => {
@@ -124,6 +143,7 @@ export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
     data,
     pagination,
     summary,
+    sprintOptions,
     loading,
     error,
     refetch

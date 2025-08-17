@@ -4,6 +4,13 @@ import React, { useState, useMemo } from 'react'
 import { useGoogleSheets } from '@/hooks/use-google-sheets'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, ArrowUp, ArrowDown, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -12,11 +19,13 @@ export function GoogleSheetsTable() {
   const [pageSize, setPageSize] = useState(100)
   const [sortBy, setSortBy] = useState('Key')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  const [selectedSprint, setSelectedSprint] = useState<string>('All')
 
   const {
     data,
     pagination,
     summary,
+    sprintOptions,
     loading,
     error,
     refetch
@@ -25,6 +34,7 @@ export function GoogleSheetsTable() {
     pageSize,
     sortBy,
     sortOrder,
+    sprint: selectedSprint === 'All' ? undefined : selectedSprint,
   })
 
   // 從資料和 summary 中動態獲取所有欄位
@@ -131,6 +141,25 @@ export function GoogleSheetsTable() {
         </div>
       </div>
 
+      {/* Sprint Filter */}
+      <div className="flex items-center gap-4">
+        <label className="text-sm font-medium text-gray-700">Sprint:</label>
+        <Select value={selectedSprint} onValueChange={(value) => {
+          setSelectedSprint(value)
+          setPage(1) // Reset to first page when filter changes
+        }}>
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Select Sprint" />
+          </SelectTrigger>
+          <SelectContent>
+            {sprintOptions.map((sprint) => (
+              <SelectItem key={sprint} value={sprint}>
+                {sprint}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {/* Table container with fixed height and scroll */}
       <div className="flex-1 min-h-0 rounded-md border bg-white">
@@ -217,9 +246,9 @@ export function GoogleSheetsTable() {
       {pagination && (
         <div className="flex items-center justify-between px-2 py-3 bg-white border-t">
           <div className="text-sm text-gray-700">
-            Showing {((pagination.current_page - 1) * pagination.page_size) + 1} to{' '}
-            {Math.min(pagination.current_page * pagination.page_size, pagination.total_records)} of{' '}
-            {pagination.total_records} results
+            Showing {((pagination.currentPage - 1) * pagination.pageSize) + 1} to{' '}
+            {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalRecords)} of{' '}
+            {pagination.totalRecords} results
           </div>
           
           <div className="flex items-center space-x-2">
@@ -227,7 +256,7 @@ export function GoogleSheetsTable() {
               variant="outline"
               size="icon"
               onClick={() => setPage(1)}
-              disabled={!pagination.has_prev}
+              disabled={!pagination.hasPrev}
             >
               <ChevronsLeft className="h-4 w-4" />
             </Button>
@@ -235,7 +264,7 @@ export function GoogleSheetsTable() {
               variant="outline"
               size="icon"
               onClick={() => setPage(page - 1)}
-              disabled={!pagination.has_prev}
+              disabled={!pagination.hasPrev}
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
@@ -244,32 +273,32 @@ export function GoogleSheetsTable() {
               <Input
                 type="number"
                 min={1}
-                max={pagination.total_pages}
+                max={pagination.totalPages}
                 value={page}
                 onChange={(e) => {
                   const newPage = parseInt(e.target.value)
-                  if (newPage >= 1 && newPage <= pagination.total_pages) {
+                  if (newPage >= 1 && newPage <= pagination.totalPages) {
                     setPage(newPage)
                   }
                 }}
                 className="w-16 text-center"
               />
-              <span className="text-sm text-gray-700">/ {pagination.total_pages}</span>
+              <span className="text-sm text-gray-700">/ {pagination.totalPages}</span>
             </div>
             
             <Button
               variant="outline"
               size="icon"
               onClick={() => setPage(page + 1)}
-              disabled={!pagination.has_next}
+              disabled={!pagination.hasNext}
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
             <Button
               variant="outline"
               size="icon"
-              onClick={() => setPage(pagination.total_pages)}
-              disabled={!pagination.has_next}
+              onClick={() => setPage(pagination.totalPages)}
+              disabled={!pagination.hasNext}
             >
               <ChevronsRight className="h-4 w-4" />
             </Button>

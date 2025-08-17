@@ -5,8 +5,8 @@
 
 ## 📊 資料源
 - **Google Sheets URL**: https://docs.google.com/spreadsheets/d/1RmJjghgiV3XWLl2BaxT-md8CP3pqb1Wuk-EhFoqp1VM/edit?usp=sharing
-- **目標工作表**: `rawData`
-- **讀取範圍**: A:W (到 Column W，包含 Project.name)
+- **主要工作表**: `rawData` (讀取範圍: A:W，包含 Project.name)
+- **Sprint 資料工作表**: `GetJiraSprintValues` (讀取範圍: Column C，Sprint Name)
 - **存取權限**: 公開讀取（有連結的人都能檢視）
 - **資料格式**: CSV 格式讀取
 
@@ -83,6 +83,7 @@ Query Parameters:
   - page_size: int (optional, default: 100, min: 10, max: 500)
   - sort_by: string (optional, default: "ID")
   - sort_order: string (optional, "asc" or "desc", default: "asc")
+  - sprint: string (optional, Sprint 篩選條件)
 
 Response: {
     "data": [
@@ -108,6 +109,20 @@ Response: {
 }
 ```
 
+### **5. 取得 Sprint 篩選選項**
+```
+GET /api/table/sprints
+Response: {
+    "sprints": [
+        "All",
+        "Sprint 1",
+        "Sprint 2", 
+        "Current Sprint",
+        "No Sprints"
+    ]
+}
+```
+
 
 ## 🔧 實作需求
 
@@ -124,6 +139,29 @@ df = pd.read_csv(StringIO(response.text))
 CACHE_DURATION = 300  # 5分鐘快取
 ```
 
+### **Sprint 資料讀取邏輯**
+```python
+# 讀取 Sprint 資料 URL
+sprint_csv_url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=GetJiraSprintValues&range=C:C"
+
+# 使用 requests + pandas 讀取 Sprint 資料
+response = requests.get(sprint_csv_url)
+sprint_df = pd.read_csv(StringIO(response.text))
+
+# 處理 Sprint 選項：
+# 1. 加入 "All" 選項
+# 2. 移除 N/A 值
+# 3. 去除重複
+# 4. 加入 "No Sprints" 選項
+def get_sprint_options(sprint_df):
+    sprints = ['All']  # 預設第一個選項
+    unique_sprints = sprint_df['Sprint Name'].dropna().unique()
+    valid_sprints = [s for s in unique_sprints if s != 'N/A' and s.strip() != '']
+    sprints.extend(sorted(valid_sprints))
+    sprints.append('No Sprints')
+    return sprints
+```
+
 ### **分頁邏輯**
 ```python
 def get_paginated_data(df, page=1, page_size=100, sort_by="ID", sort_order="asc"):
@@ -135,6 +173,21 @@ def get_paginated_data(df, page=1, page_size=100, sort_by="ID", sort_order="asc"
     end_idx = start_idx + page_size
     
     return df_sorted.iloc[start_idx:end_idx]
+```
+
+### **Sprint 篩選邏輯**
+```python
+def apply_sprint_filter(df, sprint_filter=None):
+    if not sprint_filter or sprint_filter == "All":
+        # "All" 或空值：返回全部資料
+        return df
+    
+    if sprint_filter == "No Sprints":
+        # 篩選 Sprint 欄位為空白的項目
+        return df[df['sprint'].isna() | (df['sprint'] == '') | (df['sprint'].str.strip() == '')]
+    else:
+        # 篩選指定 Sprint
+        return df[df['sprint'] == sprint_filter]
 ```
 
 
@@ -172,9 +225,10 @@ CACHE_DURATION = 300  # 5分鐘
 ### **表格功能需求**
 1. **分頁控制**: 每頁顯示 100 筆資料，支援上一頁/下一頁
 2. **排序功能**: 點擊欄位標題可排序
-3. **響應式設計**: 支援桌面和行動裝置
-4. **載入狀態**: 顯示載入動畫
-5. **錯誤處理**: 顯示錯誤訊息
+3. **Sprint 篩選**: 下拉選單篩選特定 Sprint 的 Issues
+4. **響應式設計**: 支援桌面和行動裝置
+5. **載入狀態**: 顯示載入動畫
+6. **錯誤處理**: 顯示錯誤訊息
 
 ### **表格欄位**
 - ID (可點擊排序)
@@ -199,17 +253,21 @@ CACHE_DURATION = 300  # 5分鐘
 1. ✅ 成功連接 Google Sheets 並讀取 rawData 工作表
 2. ✅ 分頁 API 正常運行，每頁預設 100 筆資料
 3. ✅ 支援排序功能
-4. ✅ 支援 CORS 讓前端可以呼叫 API
-5. ✅ 包含錯誤處理和適當的 HTTP 狀態碼
-6. ✅ 提供 Swagger 文件 (FastAPI 自動生成)
-7. ✅ 資料快取機制避免頻繁請求 Google Sheets
+4. 🔄 支援 Sprint 篩選功能，讀取 GetJiraSprintValues 工作表
+5. 🔄 提供 Sprint 選項 API 端點
+6. ✅ 支援 CORS 讓前端可以呼叫 API
+7. ✅ 包含錯誤處理和適當的 HTTP 狀態碼
+8. ✅ 提供 Swagger 文件 (FastAPI 自動生成)
+9. ✅ 資料快取機制避免頻繁請求 Google Sheets
 
 ### **前端功能需求**
 1. ✅ 表格正確顯示 Google Sheets 資料
 2. ✅ 分頁功能正常運作
 3. ✅ 排序功能正常運作
-4. ✅ 響應式設計支援各種螢幕尺寸
-5. ✅ 載入狀態和錯誤處理
+4. 🔄 Sprint 篩選下拉選單正常運作
+5. 🔄 Sprint 篩選與分頁的正確整合
+6. ✅ 響應式設計支援各種螢幕尺寸
+7. ✅ 載入狀態和錯誤處理
 
 ### **測試需求**
 1. ✅ 可以透過 `http://localhost:8000/docs` 查看 API 文件
@@ -217,6 +275,7 @@ CACHE_DURATION = 300  # 5分鐘
 3. ✅ Google Sheets 連接異常時能正確處理錯誤
 4. ✅ 前端可以成功呼叫 API 並取得分頁資料
 5. ✅ 表格功能（排序）正常運作
+6. 🔄 Sprint 篩選功能正常運作
 
 ### **啟動方式**
 ```bash
