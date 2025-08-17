@@ -73,7 +73,7 @@ health: ## 檢查服務健康狀態
 	@echo "🔍 檢查前端服務..."
 	@curl -f http://localhost:3000 > /dev/null 2>&1 && echo "✅ 前端正常" || echo "❌ 前端異常"
 	@echo "🔍 檢查後端服務..."
-	@curl -f http://localhost:8000/api/health > /dev/null 2>&1 && echo "✅ 後端正常" || echo "❌ 後端異常"
+	@curl -f http://localhost:8001/api/table/summary > /dev/null 2>&1 && echo "✅ 後端正常" || echo "❌ 後端異常"
 
 # 清理操作
 clean: ## 清理容器和 images
@@ -98,8 +98,8 @@ workshop-start: ## 🎯 課程開始 - 啟動所有服務
 	@echo ""
 	@echo "🎉 環境已就緒！"
 	@echo "📱 前端: http://localhost:3000"
-	@echo "🔧 後端: http://localhost:8000"
-	@echo "📚 API 文件: http://localhost:8000/docs"
+	@echo "🔧 後端: http://localhost:8001"
+	@echo "📚 (.NET 後端目前無 API 文件頁面)"
 
 workshop-stop: ## 🛑 課程結束 - 停止所有服務
 	@echo "🛑 停止 Workshop 環境..."

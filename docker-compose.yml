@@ -10,7 +10,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     environment:
-      - NEXT_PUBLIC_API_URL=http://backend-dotnet:8080/api
+      - NEXT_PUBLIC_API_URL=http://localhost:8001
       - CHOKIDAR_USEPOLLING=true
     
     stdin_open: true

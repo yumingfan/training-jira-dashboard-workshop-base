@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
 
 export interface TableColumn {
   name: string
@@ -8,12 +8,12 @@ export interface TableColumn {
 }
 
 export interface TableSummary {
-  sheet_id: string
-  sheet_name: string
-  total_rows: number
-  total_columns: number
+  sheetId: string
+  sheetName: string
+  totalRows: number
+  totalColumns: number
   columns: TableColumn[]
-  last_updated: string
+  lastUpdated: string
 }
 
 export interface TableRow {
@@ -85,12 +85,16 @@ export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
   // Fetch table summary
   const fetchSummary = useCallback(async () => {
     try {
+      console.log('Fetching summary from:', `${API_BASE_URL}/table/summary`)
       const response = await fetch(`${API_BASE_URL}/table/summary`)
-      if (!response.ok) throw new Error('Failed to fetch table summary')
+      console.log('Summary response status:', response.status)
+      if (!response.ok) throw new Error(`Failed to fetch table summary: ${response.status} ${response.statusText}`)
       const data = await response.json()
+      console.log('Summary data:', data)
       setSummary(data)
     } catch (err) {
       console.error('Error fetching summary:', err)
+      throw err
     }
   }, [])
 
@@ -123,10 +127,13 @@ export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
       if (status) queryParams.append('status', status)
       if (priority) queryParams.append('priority', priority)
 
-      const response = await fetch(`${API_BASE_URL}/table/data?${queryParams}`)
+      const url = `${API_BASE_URL}/table/data?${queryParams}`
+      console.log('Fetching data from:', url)
+      const response = await fetch(url)
+      console.log('Data response status:', response.status)
       
       if (!response.ok) {
-        throw new Error(`Failed to fetch data: ${response.statusText}`)
+        throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`)
       }
 
       const result: TableDataResponse = await response.json()
@@ -144,7 +151,7 @@ export function useGoogleSheets(params: UseGoogleSheetsParams = {}) {
   // Initial load
   useEffect(() => {
     fetchSummary()
-    fetchFilterOptions()
+    // fetchFilterOptions()
   }, [fetchSummary, fetchFilterOptions])
 
   // Fetch data when params change
