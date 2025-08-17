@@ -57,8 +57,9 @@ call :health
 echo.
 echo 🎉 環境已就緒！
 echo 📱 前端: http://localhost:3000
-echo 🔧 後端: http://localhost:8000
-echo 📚 API 文件: http://localhost:8000/docs
+echo 🔧 Python 後端: http://localhost:8000
+echo 📚 Python API 文件: http://localhost:8000/docs
+echo 🔧 .NET 後端: http://localhost:8001
 goto end
 
 :workshop-stop
@@ -79,8 +80,10 @@ goto end
 :health
 echo 🔍 檢查前端服務...
 powershell -Command "try { Invoke-WebRequest -Uri 'http://localhost:3000' -UseBasicParsing | Out-Null; Write-Host '✅ 前端正常' } catch { Write-Host '❌ 前端異常' }"
-echo 🔍 檢查後端服務...
-powershell -Command "try { Invoke-WebRequest -Uri 'http://localhost:8000/api/health' -UseBasicParsing | Out-Null; Write-Host '✅ 後端正常' } catch { Write-Host '❌ 後端異常' }"
+echo 🔍 檢查 Python 後端服務...
+powershell -Command "try { Invoke-WebRequest -Uri 'http://localhost:8000/api/health' -UseBasicParsing | Out-Null; Write-Host '✅ Python 後端正常' } catch { Write-Host '❌ Python 後端異常' }"
+echo 🔍 檢查 .NET 後端服務...
+powershell -Command "try { Invoke-WebRequest -Uri 'http://localhost:8001/api/table/summary' -UseBasicParsing | Out-Null; Write-Host '✅ .NET 後端正常' } catch { Write-Host '❌ .NET 後端異常' }"
 goto end
 
 :logs
@@ -101,8 +104,11 @@ echo.
 echo 執行前端測試...
 docker-compose exec frontend npm test
 echo.
-echo 執行後端測試...
+echo 執行 Python 後端測試...
 docker-compose exec backend python -m pytest
+echo.
+echo 執行 .NET 後端測試...
+docker-compose exec backend-dotnet dotnet test
 goto end
 
 :test-frontend

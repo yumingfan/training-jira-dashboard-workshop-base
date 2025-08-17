@@ -66,14 +66,18 @@ test-backend-dotnet: ## 執行 .NET 後端測試
 test: ## 執行所有測試
 	@echo "🧪 執行前端測試..."
 	@docker-compose exec frontend npm test
-	@echo "🧪 執行後端測試..."
+	@echo "🧪 執行 Python 後端測試..."
 	@docker-compose exec backend python -m pytest
+	@echo "🧪 執行 .NET 後端測試..."
+	@docker-compose exec backend-dotnet dotnet test
 
 health: ## 檢查服務健康狀態
 	@echo "🔍 檢查前端服務..."
 	@curl -f http://localhost:3000 > /dev/null 2>&1 && echo "✅ 前端正常" || echo "❌ 前端異常"
-	@echo "🔍 檢查後端服務..."
-	@curl -f http://localhost:8001/api/table/summary > /dev/null 2>&1 && echo "✅ 後端正常" || echo "❌ 後端異常"
+	@echo "🔍 檢查 Python 後端服務..."
+	@curl -f http://localhost:8000/api/health > /dev/null 2>&1 && echo "✅ Python 後端正常" || echo "❌ Python 後端異常"
+	@echo "🔍 檢查 .NET 後端服務..."
+	@curl -f http://localhost:8001/api/table/summary > /dev/null 2>&1 && echo "✅ .NET 後端正常" || echo "❌ .NET 後端異常"
 
 # 清理操作
 clean: ## 清理容器和 images
@@ -87,6 +91,7 @@ clean-all: ## 完全清理 (包含 volumes)
 install: ## 安裝專案依賴 (在容器內)
 	docker-compose exec frontend npm install
 	docker-compose exec backend pip install -r requirements.txt
+	docker-compose exec backend-dotnet dotnet restore
 
 # 課程專用指令
 workshop-start: ## 🎯 課程開始 - 啟動所有服務
