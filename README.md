@@ -18,11 +18,9 @@
 training-jira-dashboard-workshop-base/
 ├── 📂 frontend/                 # Next.js + React + TypeScript + shadcn/ui
 ├── 📂 backend/                  # Python + FastAPI API
-├── 📂 shared/                   # 共用型別和常數
-├── 📂 mock-data/               # 開發用 JSON 資料檔案
+├── 📂 backend-dotnet/           # .NET Core + Google Sheets 整合 API
 ├── 📂 workshop-guide/          # 逐步教學指南 (從這裡開始！)
 ├── 📂 docs/                    # 技術文件
-├── 📂 scripts/                 # 開發自動化腳本
 ├── 📄 CLAUDE.md                # Claude Code AI 助手指引
 └── 📄 package.json             # 專案配置
 ```
@@ -61,12 +59,12 @@ workshop.bat workshop-start
 ```
 
 Visit:
-- 🖥️ **Frontend**: http://localhost:3000 (Jira Dashboard - 原型展示)
+- 🖥️ **Frontend**: http://localhost:3000 (Jira Dashboard - Google Sheets 整合)
 - 📊 **Google Sheets Table**: http://localhost:3000/google-sheets (實際資料整合)
-- 🔧 **Backend API**: http://localhost:8000/api/health
-- 📚 **API 文件**: http://localhost:8000/docs
+- 🔧 **Backend API (.NET)**: http://localhost:8001/api/dashboard/stats
+- 📚 **API 文件**: http://localhost:8001/swagger
 
-**注意**：Jira Dashboard 頁面目前為原型展示，使用硬編碼的假資料。學員將在工作坊中學習如何整合真實 API。
+**注意**：Jira Dashboard 頁面已完成 Google Sheets 整合，顯示真實資料並支援 Sprint 篩選功能。
 
 ### 🧪 第一個任務：測試開發環境
 
@@ -242,11 +240,11 @@ workshop.bat test-backend     # 只執行後端測試
 - **🧪 Jest + React Testing Library** - 測試框架
 
 ### 後端 (工作坊建構)
-- **🐍 Python + FastAPI** - 現代 Python Web 框架
+- **🔷 .NET Core + ASP.NET** - 現代 .NET Web API 框架
 - **📄 Google Sheets 整合** - 真實資料來源
 - **🔄 RESTful APIs** - 標準 HTTP 端點
-- **📊 Pandas** - 資料處理
-- **🧪 pytest** - Python 測試框架
+- **📊 CSV 資料處理** - 直接讀取 Google Sheets CSV
+- **⚡ 記憶體快取** - 5分鐘資料快取機制
 
 ### 開發工具
 - **🐳 Docker** - 容器化開發環境
