@@ -43,6 +43,16 @@
    - 使用長條圖展示各狀態的 Issue 分布
    - 數據來源：Google Sheets rawData 工作表 Status 欄位統計
    - 支援滑鼠懸停顯示詳細數值
+   - 狀態顯示順序（由左到右）：
+     1. Backlog
+     2. Evaluated
+     3. To Do
+     4. In Progress
+     5. Waiting
+     6. Ready to Verify
+     7. Done
+     8. Invalid
+     9. Routine
 
 3. **Sprint 篩選功能**:
    - 提供 Sprint 下拉選單篩選器

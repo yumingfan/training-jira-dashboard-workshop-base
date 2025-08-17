@@ -275,14 +275,34 @@ def calculate_status_distribution_mvp(df):
     status_counts = df['status'].value_counts()
     total_count = len(df)
     
+    # 定義狀態顯示順序
+    status_order = [
+        "Backlog", "Evaluated", "To Do", "In Progress", "Waiting",
+        "Ready to Verify", "Done", "Invalid", "Routine"
+    ]
+    
     distribution = []
+    
+    # 按照指定順序排列狀態
+    for status in status_order:
+        if status in status_counts:
+            count = status_counts[status]
+            percentage = round((count / total_count) * 100, 1)
+            distribution.append({
+                "status": status,
+                "count": int(count),
+                "percentage": percentage
+            })
+    
+    # 處理未在預定義列表中的其他狀態
     for status, count in status_counts.items():
-        percentage = round((count / total_count) * 100, 1)
-        distribution.append({
-            "status": status,
-            "count": int(count),
-            "percentage": percentage
-        })
+        if status not in status_order:
+            percentage = round((count / total_count) * 100, 1)
+            distribution.append({
+                "status": status,
+                "count": int(count),
+                "percentage": percentage
+            })
     
     return {
         "distribution": distribution,

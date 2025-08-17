@@ -200,12 +200,42 @@ public class GoogleSheetsService
             }
         }
 
-        // 轉換為分布項目
-        var distribution = statusCounts.Select(kvp => new StatusDistributionItem(
-            Status: kvp.Key,
-            Count: kvp.Value,
-            Percentage: totalCount > 0 ? Math.Round((double)kvp.Value / totalCount * 100, 1) : 0
-        )).OrderByDescending(item => item.Count).ToList();
+        // 定義狀態顯示順序
+        var statusOrder = new List<string>
+        {
+            "Backlog", "Evaluated", "To Do", "In Progress", "Waiting",
+            "Ready to Verify", "Done", "Invalid", "Routine"
+        };
+
+        var distribution = new List<StatusDistributionItem>();
+
+        // 按照指定順序排列狀態
+        foreach (var status in statusOrder)
+        {
+            if (statusCounts.TryGetValue(status, out var count))
+            {
+                var percentage = totalCount > 0 ? Math.Round((double)count / totalCount * 100, 1) : 0;
+                distribution.Add(new StatusDistributionItem(
+                    Status: status,
+                    Count: count,
+                    Percentage: percentage
+                ));
+            }
+        }
+
+        // 處理未在預定義列表中的其他狀態
+        foreach (var kvp in statusCounts)
+        {
+            if (!statusOrder.Contains(kvp.Key))
+            {
+                var percentage = totalCount > 0 ? Math.Round((double)kvp.Value / totalCount * 100, 1) : 0;
+                distribution.Add(new StatusDistributionItem(
+                    Status: kvp.Key,
+                    Count: kvp.Value,
+                    Percentage: percentage
+                ));
+            }
+        }
 
         return new StatusDistribution(
             Distribution: distribution,
