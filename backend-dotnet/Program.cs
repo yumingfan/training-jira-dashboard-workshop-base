@@ -68,4 +68,35 @@ app.MapGet("/api/table/sprints", async (GoogleSheetsService sheetsService) =>
     }
 });
 
+// Dashboard MVP API endpoints
+app.MapGet("/api/dashboard/stats", async (
+    [FromServices] GoogleSheetsService sheetsService,
+    [FromQuery] string? sprint = null) =>
+{
+    try
+    {
+        var stats = await sheetsService.GetDashboardStatsAsync(sprint);
+        return Results.Ok(stats);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
+});
+
+app.MapGet("/api/dashboard/status-distribution", async (
+    [FromServices] GoogleSheetsService sheetsService,
+    [FromQuery] string? sprint = null) =>
+{
+    try
+    {
+        var distribution = await sheetsService.GetStatusDistributionAsync(sprint);
+        return Results.Ok(distribution);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
+});
+
 app.Run();
