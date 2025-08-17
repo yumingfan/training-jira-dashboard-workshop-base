@@ -1,29 +1,40 @@
 # 技術架構概覽
 
-本文件提供 Training Jira Dashboard Workshop 專案的技術架構深度解析，旨在協助工程師快速理解系統設計、技術選型和實作細節。
+本文件提供 Training Jira Dashboard MVP v1.0 專案的技術架構深度解析，旨在協助工程師快速理解系統設計、技術選型和實作細節。
 
 ## 專案概述
 
-這是一個展示 AI 驅動全端開發的教學專案，採用現代化技術堆疊建構敏捷開發儀表板。專案設計為 monorepo 架構，整合 Google Sheets 作為資料來源，支援 Docker 容器化部署。
+這是一個功能完整的 Jira Dashboard MVP v1.0 應用，採用現代化技術堆疊建構敏捷開發儀表板。專案整合 Google Sheets 作為真實資料來源，支援 Docker 容器化部署，專注於核心的統計視覺化功能。
 
 ### 專案定位
-- **Jira Dashboard**：教學用原型展示，使用假資料
-- **Google Sheets Table**：生產就緒功能，整合真實資料
-- **目標**：展示從原型到生產的完整開發流程
+- **Jira Dashboard MVP v1.0**：生產就緒的 Dashboard 應用，整合 Google Sheets 真實資料
+- **核心功能**：4 個關鍵指標卡片 + 1 個狀態分布圖表 + Sprint 篩選
+- **Google Sheets Table**：完整的資料表格檢視功能
+- **目標**：展示在嚴格資料限制下的 vibe coding 開發流程
 
 ## 系統架構圖
 
 ```
-┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  Google Sheets  │────>│   Backend API    │────>│    Frontend     │
-│   (rawData)     │ CSV │  (FastAPI)       │ API │   (Next.js)     │
-└─────────────────┘     └──────────────────┘     └─────────────────┘
-                              │                           │
-                              ▼                           ▼
-                        ┌──────────┐               ┌──────────┐
-                        │  Cache   │               │  React   │
-                        │ (5 min)  │               │  Hooks   │
-                        └──────────┘               └──────────┘
+┌─────────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│   Google Sheets     │────>│   Backend API    │────>│    Frontend     │
+│ ┌─────────────────┐ │ CSV │  (.NET Core)     │ API │   (Next.js)     │
+│ │ rawData (23欄) │ │     │                  │     │                 │
+│ │ GetJiraSprintV. │ │     │                  │     │                 │
+│ └─────────────────┘ │     │                  │     │                 │
+└─────────────────────┘     └──────────────────┘     └─────────────────┘
+                                    │                           │
+                                    ▼                           ▼
+                              ┌──────────┐               ┌──────────┐
+                              │  Cache   │               │Dashboard │
+                              │ (5 min)  │               │Components│
+                              └──────────┘               └──────────┘
+                                                                │
+                                                                ▼
+                                                         ┌──────────┐
+                                                         │4 Cards + │
+                                                         │1 Chart + │
+                                                         │Sprint    │
+                                                         └──────────┘
 ```
 
 ## 技術堆疊
@@ -52,12 +63,19 @@
 
 | 技術 | 版本 | 用途 |
 |------|------|------|
-| **Python** | 3.11 | 執行環境 |
-| **FastAPI** | 0.104.1 | Web 框架 |
+| **.NET Core** | 8.0 | 主要執行環境 |
+| **ASP.NET Core** | 8.0 | Web API 框架 |
+| **C#** | 12.0 | 程式語言 |
+| **Google Sheets CSV API** | - | 資料來源整合 |
+| **記憶體快取** | 內建 | 5分鐘資料快取 |
+
+#### 備用後端（Python）
+| 技術 | 版本 | 用途 |
+|------|------|------|
+| **Python** | 3.11 | 備用執行環境 |
+| **FastAPI** | 0.104.1 | 備用 Web 框架 |
 | **Uvicorn** | 0.24.0 | ASGI 伺服器 |
-| **Pydantic** | 2.5.0 | 資料驗證和序列化 |
 | **Pandas** | 2.1.3 | 資料處理 |
-| **Requests** | 2.31.0 | HTTP 請求處理 |
 
 #### 後端測試工具
 | 技術 | 版本 | 用途 |
@@ -81,25 +99,35 @@
 training-jira-dashboard-workshop-base/
 ├── frontend/                 # Next.js 前端應用
 │   ├── app/                 # App Router 路由
+│   │   ├── page.tsx        # 主 Dashboard 頁面
+│   │   └── google-sheets/  # Google Sheets Table 頁面
 │   ├── components/          # React 元件
+│   │   ├── jira-dashboard.tsx      # MVP Dashboard 元件
+│   │   └── google-sheets-table.tsx # 資料表格元件
 │   ├── hooks/              # 自訂 React Hooks
+│   │   ├── use-dashboard.ts        # Dashboard API Hook
+│   │   └── use-google-sheets.ts    # Google Sheets Hook
 │   ├── lib/                # 工具函式
 │   ├── public/             # 靜態資源
 │   ├── __tests__/          # 前端測試檔案
 │   ├── jest.config.js      # Jest 配置
 │   └── jest.setup.js       # Jest 設定
-├── backend/                 # FastAPI 後端應用
+├── backend-dotnet/          # .NET Core 主要後端
+│   ├── Program.cs          # API 路由定義
+│   ├── GoogleSheetsService.cs  # Google Sheets 服務
+│   ├── Models.cs           # 資料模型
+│   └── Dockerfile          # Docker 配置
+├── backend/                 # Python FastAPI 備用後端
 │   ├── main.py            # 應用入口
 │   ├── config.py          # 配置管理
 │   ├── models.py          # Pydantic 模型
 │   ├── services/          # 商業邏輯
 │   ├── tests/             # 後端測試檔案
 │   └── pytest.ini         # pytest 配置
-├── shared/                  # 共享程式碼
-├── mock-data/              # 測試資料
-├── workshop-guide/         # 工作坊教材
 ├── docs/                   # 技術文件
-├── scripts/                # 輔助腳本
+│   ├── table-schema.md    # 嚴格資料架構定義
+│   ├── mvp-v1/           # MVP v1.0 文件
+│   └── guides/           # 開發指引
 ├── docker-compose.yml      # Docker 配置
 ├── Makefile               # 快速指令
 └── package.json           # Monorepo 配置
@@ -109,33 +137,65 @@ training-jira-dashboard-workshop-base/
 
 ### 前端核心元件
 
-1. **JiraDashboard** (`/frontend/components/jira-dashboard.tsx`) **[原型展示]**
-   - 主要儀表板介面
-   - **注意**：此為原型展示頁面，使用硬編碼的假資料
-   - 包含 Issues 列表、圖表視覺化、活動記錄
-   - 學員將在工作坊中學習如何整合真實 API
+1. **JiraDashboard** (`/frontend/components/jira-dashboard.tsx`) **[MVP v1.0 生產版]**
+   - 完整整合 Google Sheets 資料的 Dashboard
+   - **4 個關鍵指標卡片**：Total Issues, Total Story Points, Done Issues, Done Story Points
+   - **1 個狀態分布圖表**：Bar Chart 顯示各狀態的 Issue 分布（固定排序）
+   - **Sprint 篩選器**：動態載入 Sprint 選項，支援 "All", 有效 Sprint, "No Sprints"
+   - 使用 `useDashboard` Hook 整合 .NET Core API
 
-2. **GoogleSheetsTable** (`/frontend/components/google-sheets-table.tsx`)
-   - 動態欄位顯示（支援到 Column W）
+2. **GoogleSheetsTable** (`/frontend/components/google-sheets-table.tsx`) **[資料檢視工具]**
+   - 嚴格按照 23 欄位架構顯示（Column A-W）
    - 表頭凍結與滾動支援
-   - 分頁、排序、篩選功能
+   - 分頁、排序、Sprint 篩選功能
    - 響應式設計
 
-3. **useGoogleSheets Hook** (`/frontend/hooks/use-google-sheets.ts`)
-   - API 資料獲取與快取
-   - 狀態管理
-   - 錯誤處理
-   - 自動重試機制
+3. **useDashboard Hook** (`/frontend/hooks/use-dashboard.ts`) **[主要 API Hook]**
+   - Dashboard 統計資料獲取
+   - Sprint 篩選邏輯
+   - 狀態分布資料處理
+   - 5分鐘快取機制
 
-### 後端 API 端點
+4. **useGoogleSheets Hook** (`/frontend/hooks/use-google-sheets.ts`) **[表格資料 Hook]**
+   - 原始 Google Sheets 資料獲取
+   - 分頁和排序處理
+   - 錯誤處理和重試機制
+
+### 後端 API 端點 (.NET Core)
 
 | 端點 | 方法 | 功能 | 參數 |
 |------|------|------|------|
-| `/` | GET | API 資訊 | - |
-| `/api/health` | GET | 健康檢查 | - |
+| `/api/dashboard/stats` | GET | Dashboard 統計資料 | sprint (optional) |
+| `/api/dashboard/status-distribution` | GET | 狀態分布資料 | sprint (optional) |
+| `/api/table/sprints` | GET | Sprint 篩選選項 | - |
+| `/api/table/data` | GET | 分頁資料查詢 | page, page_size, sort_by, sort_order, sprint |
 | `/api/table/summary` | GET | 表格摘要資訊 | - |
-| `/api/table/data` | GET | 分頁資料查詢 | page, page_size, sort_by, sort_order, search, status, priority |
-| `/api/table/filters` | GET | 可用篩選選項 | - |
+
+### API 回應格式
+
+**Dashboard Stats API**:
+```json
+{
+  "total_issues": 1250,
+  "total_story_points": 89.5,
+  "done_issues": 485,
+  "done_story_points": 42.0,
+  "last_updated": "2024-08-17T12:00:00Z"
+}
+```
+
+**Status Distribution API**:
+```json
+{
+  "distribution": [
+    {"status": "Backlog", "count": 320, "percentage": 25.6},
+    {"status": "To Do", "count": 445, "percentage": 35.6},
+    {"status": "Done", "count": 485, "percentage": 38.8}
+  ],
+  "total_count": 1250,
+  "last_updated": "2024-08-17T12:00:00Z"
+}
+```
 
 ### 資料模型
 
@@ -177,48 +237,50 @@ class TableDataResponse(BaseModel):
 
 ## 資料來源架構
 
-### 目前資料來源狀態
+### MVP v1.0 資料來源架構
 
-1. **Jira Dashboard 頁面** **[原型展示]**：
-   - **重要**：此頁面為教學用原型，使用硬編碼的假資料展示
-   - 資料直接寫在 React 元件內，非真實 API 整合
-   - 作為工作坊的起始狀態，學員將學習如何整合真實 API
-   - 完成工作坊後，將能連接真實後端 API
+1. **Jira Dashboard 頁面** **[MVP v1.0 生產版]**：
+   - **完整整合 Google Sheets**：使用 .NET Core API 即時讀取真實資料
+   - **4 個核心指標**：從 rawData 表動態計算統計資料
+   - **狀態分布圖表**：按照固定業務流程順序顯示 9 個狀態
+   - **Sprint 篩選功能**：從 GetJiraSprintValues 表動態載入選項
+   - **5分鐘快取**：平衡效能與即時性
 
-2. **Google Sheets Table 頁面** **[生產就緒]**：
-   - 完整整合後端 FastAPI，展示真實資料整合
-   - 即時從 Google Sheets 讀取資料
-   - 實作完整的分頁、排序、篩選功能
-   - 可作為實際專案的參考範例
+2. **Google Sheets Table 頁面** **[資料檢視工具]**：
+   - **嚴格 23 欄位架構**：完全按照 table-schema.md 定義的結構
+   - **vibe coding 限制**：展示在資料結構限制下的開發
+   - **完整 CRUD 檢視**：分頁、排序、篩選功能
+   - **響應式設計**：適配不同螢幕尺寸
 
-3. **Mock Data 目錄** (`/mock-data/`)：
-   - 包含預先準備的 JSON 檔案
-   - issues.json、projects.json、users.json 等
-   - 供後端 API 開發時使用（工作坊階段 3）
+3. **資料表結構** (詳見 [table-schema.md](./table-schema.md))：
+   - **rawData (23 欄位)**：主要 Issue 資料，從 Column A 到 W
+   - **GetJiraSprintValues (9 欄位)**：Sprint 管理資料，從 Column A 到 I
 
-### 資料表結構
+### 嚴格資料架構限制
 
 詳細的資料表架構說明請參考 [Table Schema 文件](./table-schema.md)。
 
-#### rawData 資料表
-主要資料表，包含 Issue 的完整資訊：
-- **基本識別**：Key、Issue Type、Projects、Summary、parent
-- **狀態與進度**：Status、Sprint、Status Category、Status Category Changed
-- **優先級**：Priority、Urgency
-- **估算**：T-Size、Confidence、Story Points、BusinessPoints
-- **時間相關**：Created、Updated、Resolved、Due date、Σ Time Spent
-- **分類標籤**：Clients、TaskTags、Project.name
+#### rawData 資料表（23 欄位嚴格限制）
+**Vibe Coding 開發限制**：
+- **欄位順序固定**：必須按照 1-23 順序存取，使用 `row[index]` 模式
+- **禁止結構修改**：不可新增、刪除或重新排列欄位
+- **類型安全**：string, number, date 三種類型，空值必須妥善處理
+- **業務邏輯限制**：Status 必須為 9 個預定義狀態之一
 
-#### rawStatusTime 資料表 **[尚未連線]**
-記錄 Issue 狀態變更歷史，用於追蹤狀態轉換時間軸：
-- **Key**：Issue 唯一識別碼
-- **Summary**：Issue 標題
-- **Created**：Issue 建立時間
-- **Status Transition.date**：狀態變更時間
-- **Status Transition.from**：變更前狀態
-- **Status Transition.to**：變更後狀態
+**關鍵欄位**：
+- **欄位 1 (Key)**：唯一識別碼，絕對不可重複
+- **欄位 6 (Status)**：9 個固定狀態，決定 Dashboard 圖表排序
+- **欄位 7 (Sprint)**：對應 GetJiraSprintValues 的 Sprint Name
+- **欄位 16 (Story Points)**：數值型，用於統計計算
 
-**重要提醒**：此資料表目前尚未整合到系統中，但完整的 schema 定義已記錄在 [Table Schema 文件](./table-schema.md) 中，供未來實作參考。
+#### GetJiraSprintValues 資料表（9 欄位）
+**Sprint 管理架構**：
+- **Column A-I 固定結構**：Board ID, Board Name, Sprint Name, Sprint ID, state, startDate, endDate, completeDate, goal
+- **關鍵整合欄位**：Column C (Sprint Name) 對應 rawData 欄位 7
+- **狀態管理**：future, active, closed 三種 Sprint 狀態
+
+#### rawStatusTime 資料表 **[架構已定義，尚未整合]**
+狀態變更歷史追蹤表，為未來擴展預留的架構定義。
 
 ## 開發環境設定
 
@@ -248,14 +310,26 @@ cd backend && uvicorn main:app --reload  # 後端 (http://localhost:8000)
 
 **前端** (`frontend/.env.local`)：
 ```
-NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_URL=http://localhost:8001
 ```
 
-**後端** (`backend/config.py`)：
+**後端 (.NET Core)** (`backend-dotnet/appsettings.json`)：
+```json
+{
+  "GoogleSheets": {
+    "SheetId": "1RmJjghgiV3XWLl2BaxT-md8CP3pqb1Wuk-EhFoqp1VM",
+    "RawDataSheet": "rawData",
+    "SprintSheet": "GetJiraSprintValues"
+  },
+  "CacheDuration": 300,
+  "Urls": "http://localhost:8001"
+}
+```
+
+**備用後端 (Python)** (`backend/config.py`)：
 ```python
 GOOGLE_SHEET_ID = "1RmJjghgiV3XWLl2BaxT-md8CP3pqb1Wuk-EhFoqp1VM"
 SHEET_NAME = "rawData"
-# 注意：rawStatusTime sheet 尚未連線，但 schema 已記錄在 docs/table-schema.md
 API_PORT = 8000
 CACHE_DURATION = 300  # 5 分鐘
 ```
@@ -293,13 +367,22 @@ services:
     build: ./frontend
     ports: ["3000:3000"]
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_API_URL=http://localhost:8001
+    
+  backend-dotnet:
+    build: ./backend-dotnet
+    ports: ["8001:8001"]
+    environment:
+      - GoogleSheets__SheetId=1RmJjghgiV3XWLl2BaxT-md8CP3pqb1Wuk-EhFoqp1VM
+      - GoogleSheets__RawDataSheet=rawData
+      - GoogleSheets__SprintSheet=GetJiraSprintValues
+      - CacheDuration=300
     
   backend:
     build: ./backend
     ports: ["8000:8000"]
     environment:
-      - GOOGLE_SHEET_ID=...
+      - GOOGLE_SHEET_ID=1RmJjghgiV3XWLl2BaxT-md8CP3pqb1Wuk-EhFoqp1VM
       - SHEET_NAME=rawData
 ```
 
@@ -328,10 +411,11 @@ services:
    - 無資料寫入功能
    - 無即時協作功能
 
-4. **教學設計限制**：
-   - Jira Dashboard 刻意使用硬編碼資料作為起始點
-   - 學員需要在工作坊中學習 API 整合
-   - 部分功能保留為教學練習
+4. **Vibe Coding 設計限制**：
+   - 嚴格限制資料架構，不可修改 rawData 23 欄位結構
+   - 強制使用 `row[index]` 存取模式，避免欄位名稱依賴
+   - MVP 功能範圍限制：僅 4 個 Score Cards + 1 個 Bar Chart
+   - 展示在真實約束條件下的快速開發能力
 
 ### 擴展建議
 
@@ -421,11 +505,21 @@ make test-backend
 
 ## 結論
 
-這個專案展示了現代全端開發的最佳實踐，特別適合作為 AI 輔助開發的教學範例。透過整合 Google Sheets、容器化部署和現代化框架，提供了一個低門檻但功能完整的解決方案。
+這個 Jira Dashboard MVP v1.0 專案展示了在嚴格資料架構限制下的現代全端開發最佳實踐，特別適合作為 vibe coding 快速開發的範例。透過整合 Google Sheets、.NET Core API 和現代化前端框架，提供了一個完整且功能聚焦的解決方案。
 
-對於工程師而言，這個專案可以作為：
-- 學習現代技術堆疊的範例
-- 快速原型開發的起點
-- AI 輔助開發流程的參考
+### 核心價值
 
-未來可以根據實際需求，逐步擴展功能並優化架構。
+對於開發者而言，這個專案提供：
+- **資料架構約束下的開發經驗**：學習在嚴格限制中保持開發效率
+- **MVP 功能聚焦**：理解如何快速實現核心業務價值
+- **現代技術整合**：.NET Core + React + Google Sheets 的完整整合
+- **容器化部署**：Docker 環境下的一致性開發體驗
+
+### 技術示範
+
+1. **嚴格資料結構管理**：23 欄位固定架構的實作模式
+2. **前後端分離**：.NET Core API + React SPA 架構
+3. **雲端資料整合**：無需複雜設定的 Google Sheets 整合
+4. **效能優化策略**：5分鐘快取機制平衡即時性與效能
+
+這個專案為快速原型開發和受限環境下的產品開發提供了實用的參考範例。
