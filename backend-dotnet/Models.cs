@@ -51,3 +51,19 @@ public record StatusDistribution(
     [property: JsonPropertyName("total_count")] int TotalCount,
     [property: JsonPropertyName("last_updated")] DateTime LastUpdated
 );
+
+// Configuration Models
+public record UpdateSheetConfigRequest(
+    [property: JsonPropertyName("google_sheet_url")] string GoogleSheetUrl
+);
+
+public record UpdateSheetConfigResponse(
+    [property: JsonPropertyName("success")] bool Success,
+    [property: JsonPropertyName("message")] string Message,
+    [property: JsonPropertyName("sheet_id")] string? SheetId
+);
+
+public record SheetConfigInfo(
+    [property: JsonPropertyName("sheet_id")] string SheetId,
+    [property: JsonPropertyName("sheet_url")] string SheetUrl
+);

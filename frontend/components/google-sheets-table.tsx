@@ -11,7 +11,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, ArrowUp, ArrowDown, Loader2 } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, ArrowUpDown, ArrowUp, ArrowDown, Loader2, Settings, ExternalLink } from 'lucide-react'
 import { format } from 'date-fns'
 
 export function GoogleSheetsTable() {
@@ -20,6 +22,11 @@ export function GoogleSheetsTable() {
   const [sortBy, setSortBy] = useState('Key')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [selectedSprint, setSelectedSprint] = useState<string>('All')
+  const [showConfigDialog, setShowConfigDialog] = useState(false)
+  const [googleSheetUrl, setGoogleSheetUrl] = useState('')
+  const [configLoading, setConfigLoading] = useState(false)
+  const [configMessage, setConfigMessage] = useState('')
+  const [currentSheetInfo, setCurrentSheetInfo] = useState<{sheet_id: string; sheet_url: string} | null>(null)
 
   const {
     data,
@@ -36,6 +43,70 @@ export function GoogleSheetsTable() {
     sortOrder,
     sprint: selectedSprint === 'All' ? undefined : selectedSprint,
   })
+
+  // 獲取當前 sheet 配置
+  const fetchSheetConfig = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
+      const response = await fetch(`${apiUrl}/api/config/sheet`)
+      if (response.ok) {
+        const config = await response.json()
+        setCurrentSheetInfo(config)
+      }
+    } catch (error) {
+      console.error('Failed to fetch sheet config:', error)
+    }
+  }
+
+  // 更新 sheet 配置
+  const updateSheetConfig = async () => {
+    if (!googleSheetUrl.trim()) {
+      setConfigMessage('Please enter a valid Google Sheets URL')
+      return
+    }
+
+    setConfigLoading(true)
+    setConfigMessage('')
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001'
+      const response = await fetch(`${apiUrl}/api/config/sheet`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          google_sheet_url: googleSheetUrl.trim()
+        })
+      })
+
+      const result = await response.json()
+      
+      if (response.ok && result.success) {
+        setConfigMessage(`✅ ${result.message}`)
+        setGoogleSheetUrl('')
+        await fetchSheetConfig() // 重新獲取配置
+        // 重新載入資料以反映新的資料來源
+        refetch()
+        // 自動關閉對話框
+        setTimeout(() => {
+          setShowConfigDialog(false)
+          setConfigMessage('')
+        }, 2000)
+      } else {
+        setConfigMessage(`❌ ${result.message || 'Failed to update configuration'}`)
+      }
+    } catch (error) {
+      setConfigMessage(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setConfigLoading(false)
+    }
+  }
+
+  // 組件掛載時獲取當前配置
+  React.useEffect(() => {
+    fetchSheetConfig()
+  }, [])
 
   // 從資料和 summary 中動態獲取所有欄位
   const allColumns = useMemo(() => {
@@ -133,11 +204,121 @@ export function GoogleSheetsTable() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Google Sheets Table View</h1>
-          {summary && (
-            <p className="text-sm text-gray-500">
-              Sheet: {summary.sheetName} | Total Rows: {summary.totalRows} | Showing {summary.columns.length} columns
+          <div className="space-y-1">
+            {summary && (
+              <p className="text-sm text-gray-500">
+                Sheet: {summary.sheetName} | Total Rows: {summary.totalRows} | Showing {summary.columns.length} columns
+              </p>
+            )}
+            <p className="text-xs text-gray-400 font-mono">
+              Sheet ID: {currentSheetInfo?.sheet_id || 'Loading...'}
             </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {currentSheetInfo && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open(currentSheetInfo.sheet_url, '_blank')}
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Open Sheet
+            </Button>
           )}
+          <Dialog open={showConfigDialog} onOpenChange={setShowConfigDialog}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Settings className="h-4 w-4 mr-2" />
+                Configure Data Source
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Configure Google Sheets Data Source</DialogTitle>
+                <DialogDescription>
+                  Update the Google Sheets URL to change the data source for this table.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                {currentSheetInfo && (
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-sm">Current Configuration</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <div>
+                        <label className="text-xs font-medium text-gray-500">Sheet ID:</label>
+                        <p className="text-sm font-mono bg-gray-100 p-2 rounded break-all">
+                          {currentSheetInfo.sheet_id}
+                        </p>
+                      </div>
+                      <Button
+                        variant="link"
+                        size="sm"
+                        className="p-0 h-auto"
+                        onClick={() => window.open(currentSheetInfo.sheet_url, '_blank')}
+                      >
+                        <ExternalLink className="h-3 w-3 mr-1" />
+                        View Current Sheet
+                      </Button>
+                    </CardContent>
+                  </Card>
+                )}
+                
+                <div className="space-y-2">
+                  <label htmlFor="sheet-url" className="text-sm font-medium">
+                    New Google Sheets URL:
+                  </label>
+                  <Input
+                    id="sheet-url"
+                    placeholder="https://docs.google.com/spreadsheets/d/..."
+                    value={googleSheetUrl}
+                    onChange={(e) => setGoogleSheetUrl(e.target.value)}
+                  />
+                  <p className="text-xs text-gray-500">
+                    Paste the full Google Sheets URL. The system will extract the Sheet ID automatically.
+                  </p>
+                </div>
+
+                {configMessage && (
+                  <div className={`p-3 rounded text-sm ${
+                    configMessage.startsWith('✅') 
+                      ? 'bg-green-50 text-green-700 border border-green-200' 
+                      : 'bg-red-50 text-red-700 border border-red-200'
+                  }`}>
+                    {configMessage}
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowConfigDialog(false)
+                      setGoogleSheetUrl('')
+                      setConfigMessage('')
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={updateSheetConfig}
+                    disabled={configLoading || !googleSheetUrl.trim()}
+                  >
+                    {configLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      'Update Configuration'
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 

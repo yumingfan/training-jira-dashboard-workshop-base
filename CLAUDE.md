@@ -21,10 +21,7 @@ training-jira-dashboard-workshop-base/
 ├── frontend/                    # Next.js 15 + React 19 + TypeScript
 ├── backend/                     # Python FastAPI (port 8000)
 ├── backend-dotnet/              # .NET 8 Web API (port 8001)
-├── shared/                      # Shared TypeScript types and constants
-├── mock-data/                   # JSON files for development data
 ├── docs/                        # Technical documentation
-└── scripts/                     # Development scripts
 ```
 
 ## Development Commands

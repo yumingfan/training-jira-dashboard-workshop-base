@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.RegularExpressions;
 using CsvHelper;
 using CsvHelper.Configuration;
 using JiraDashboard.Models;
@@ -8,8 +9,11 @@ namespace JiraDashboard.Services;
 public class GoogleSheetsService
 {
     private readonly HttpClient _httpClient;
-    private readonly string _sheetId;
-    private readonly string _sheetName;
+    private string _sheetId; // 改為可變更
+    //private readonly string _sheetName;
+    private readonly string _sheetRawData;
+    private readonly string _sheetRawStatusTime;
+    private readonly string _sheetSprintInfo;
     private readonly TimeSpan _cacheDuration = TimeSpan.FromMinutes(5);
     private List<Dictionary<string, object?>>? _cache;
     private DateTime _cacheTimestamp;
@@ -20,12 +24,15 @@ public class GoogleSheetsService
     {
         _httpClient = httpClient;
         _sheetId = configuration["GoogleSheets:SheetId"] ?? throw new InvalidOperationException("SheetId not configured");
-        _sheetName = configuration["GoogleSheets:SheetName"] ?? throw new InvalidOperationException("SheetName not configured");
+        //_sheetName = configuration["GoogleSheets:Sheet_rawData"] ?? throw new InvalidOperationException("Sheet_rawData not configured");
+        _sheetRawData = configuration["GoogleSheets:Sheet_rawData"] ?? throw new InvalidOperationException("Sheet_rawData not configured");
+        _sheetRawStatusTime = configuration["GoogleSheets:Sheet_rawStatusTime"] ?? throw new InvalidOperationException("Sheet_rawStatusTime not configured");
+        _sheetSprintInfo = configuration["GoogleSheets:Sheet_sprintInfo"] ?? throw new InvalidOperationException("Sheet_sprintInfo not configured");
     }
 
-    private string GetCsvUrl() => $"https://docs.google.com/spreadsheets/d/{_sheetId}/gviz/tq?tqx=out:csv&sheet={_sheetName}&range=A:W";
+    private string GetCsvUrl() => $"https://docs.google.com/spreadsheets/d/{_sheetId}/gviz/tq?tqx=out:csv&sheet={_sheetRawData}&range=A:W";
     
-    private string GetSprintCsvUrl() => $"https://docs.google.com/spreadsheets/d/{_sheetId}/gviz/tq?tqx=out:csv&sheet=GetJiraSprintValues&range=C:C";
+    private string GetSprintCsvUrl() => $"https://docs.google.com/spreadsheets/d/{_sheetId}/gviz/tq?tqx=out:csv&sheet={_sheetSprintInfo}&range=C:C";
 
     private async Task<List<Dictionary<string, object?>>> FetchAndCacheDataAsync()
     {
@@ -106,7 +113,7 @@ public class GoogleSheetsService
 
         return new TableSummary(
             SheetId: _sheetId,
-            SheetName: _sheetName,
+            SheetName: _sheetRawData,
             TotalRows: data.Count,
             TotalColumns: columns.Count,
             Columns: columns,
@@ -204,7 +211,8 @@ public class GoogleSheetsService
         var statusOrder = new List<string>
         {
             "Backlog", "Evaluated", "To Do", "In Progress", "Waiting",
-            "Ready to Verify", "Done", "Invalid", "Routine"
+            "Dev Completed", "Ready to Verify", "Testing", "Ready to Release",
+            "Done", "Invalid", "Routine"
         };
 
         var distribution = new List<StatusDistributionItem>();
@@ -325,5 +333,42 @@ public class GoogleSheetsService
             var sprintValue = row["sprint"]?.ToString()?.Trim();
             return sprintValue == sprintFilter;
         }).ToList();
+    }
+
+    public static string? ExtractSheetIdFromUrl(string googleSheetUrl)
+    {
+        if (string.IsNullOrWhiteSpace(googleSheetUrl))
+            return null;
+
+        // Google Sheets URL patterns:
+        // https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit#gid=0
+        // https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit?usp=sharing
+        // https://docs.google.com/spreadsheets/d/{SHEET_ID}/edit
+        // https://docs.google.com/spreadsheets/d/{SHEET_ID}
+        var pattern = @"https://docs\.google\.com/spreadsheets/d/([a-zA-Z0-9-_]+)";
+        var match = Regex.Match(googleSheetUrl, pattern);
+        
+        return match.Success ? match.Groups[1].Value : null;
+    }
+
+    public string GetCurrentSheetId() => _sheetId;
+
+    public string GetSheetUrl() => $"https://docs.google.com/spreadsheets/d/{_sheetId}";
+
+    public void UpdateSheetId(string newSheetId)
+    {
+        if (string.IsNullOrWhiteSpace(newSheetId))
+            throw new ArgumentException("Sheet ID cannot be null or empty", nameof(newSheetId));
+
+        _sheetId = newSheetId;
+        ClearCache();
+    }
+
+    public void ClearCache()
+    {
+        _cache = null;
+        _cacheTimestamp = DateTime.MinValue;
+        _sprintCache = null;
+        _sprintCacheTimestamp = DateTime.MinValue;
     }
 }

@@ -1,10 +1,17 @@
 using JiraDashboard.Services;
+using JiraDashboard.Models;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddHttpClient<GoogleSheetsService>();
+builder.Services.AddHttpClient();
+builder.Services.AddSingleton<GoogleSheetsService>(provider =>
+{
+    var httpClient = provider.GetRequiredService<IHttpClientFactory>().CreateClient();
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    return new GoogleSheetsService(httpClient, configuration);
+});
 
 builder.Services.AddCors(options =>
 {
@@ -92,6 +99,51 @@ app.MapGet("/api/dashboard/status-distribution", async (
     {
         var distribution = await sheetsService.GetStatusDistributionAsync(sprint);
         return Results.Ok(distribution);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
+});
+
+// Configuration API endpoints
+app.MapGet("/api/config/sheet", (GoogleSheetsService sheetsService) =>
+{
+    try
+    {
+        var sheetId = sheetsService.GetCurrentSheetId();
+        var sheetUrl = sheetsService.GetSheetUrl();
+        return Results.Ok(new SheetConfigInfo(sheetId, sheetUrl));
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(ex.Message);
+    }
+});
+
+app.MapPost("/api/config/sheet", async (
+    [FromBody] UpdateSheetConfigRequest request,
+    [FromServices] GoogleSheetsService sheetsService) =>
+{
+    try
+    {
+        var extractedSheetId = GoogleSheetsService.ExtractSheetIdFromUrl(request.GoogleSheetUrl);
+        
+        if (string.IsNullOrEmpty(extractedSheetId))
+        {
+            return Results.BadRequest(new UpdateSheetConfigResponse(
+                false, 
+                "Invalid Google Sheets URL. Please provide a valid Google Sheets URL.", 
+                null));
+        }
+
+        // 動態更新 SheetId 並清除快取
+        sheetsService.UpdateSheetId(extractedSheetId);
+        
+        return Results.Ok(new UpdateSheetConfigResponse(
+            true, 
+            $"Sheet ID updated successfully to: {extractedSheetId}. Changes are now active.", 
+            extractedSheetId));
     }
     catch (Exception ex)
     {
