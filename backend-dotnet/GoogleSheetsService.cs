@@ -314,6 +314,20 @@ public class GoogleSheetsService
         return "";
     }
 
+    private static double ParseStoryPoints(Dictionary<string, object?> row, string storyPointsColumn)
+    {
+        if (string.IsNullOrEmpty(storyPointsColumn)) return 0;
+
+        if (row.TryGetValue(storyPointsColumn, out var value) && value != null)
+        {
+            if (double.TryParse(value.ToString(), out var points))
+            {
+                return points;
+            }
+        }
+        return 0;
+    }
+
     private static List<Dictionary<string, object?>> ApplySprintFilter(List<Dictionary<string, object?>> data, string? sprintFilter)
     {
         if (string.IsNullOrEmpty(sprintFilter) || sprintFilter == "All")
@@ -414,5 +428,247 @@ public class GoogleSheetsService
         _cacheTimestamp = DateTime.MinValue;
         _sprintCache = null;
         _sprintCacheTimestamp = DateTime.MinValue;
+    }
+
+    // 新增：獲取 GetJiraSprintValues 表格的完整資料
+    private string GetSprintValuesFullCsvUrl() => $"https://docs.google.com/spreadsheets/d/{_sheetId}/gviz/tq?tqx=out:csv&sheet={_sheetSprintInfo}";
+
+    private async Task<List<Dictionary<string, object?>>> FetchSprintValuesDataAsync()
+    {
+        var url = GetSprintValuesFullCsvUrl();
+        using var response = await _httpClient.GetAsync(url);
+        response.EnsureSuccessStatusCode();
+
+        using var stream = await response.Content.ReadAsStreamAsync();
+        using var reader = new StreamReader(stream);
+        using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            PrepareHeaderForMatch = args => args.Header.ToLower().Replace(" ", "_").Replace(".", "_")
+        });
+
+        var records = new List<Dictionary<string, object?>>();
+        await foreach (var record in csv.GetRecordsAsync<dynamic>())
+        {
+            records.Add(new Dictionary<string, object?>(record));
+        }
+
+        return records;
+    }
+
+    public async Task<SprintInfo> GetSprintInfoAsync(string sprintName)
+    {
+        var sprintData = await FetchSprintValuesDataAsync();
+        var sprintRecord = sprintData.FirstOrDefault(row => 
+            row.ContainsKey("sprint_name") && 
+            row["sprint_name"]?.ToString() == sprintName);
+
+        if (sprintRecord == null)
+        {
+            throw new ArgumentException($"Sprint '{sprintName}' not found");
+        }
+
+        return new SprintInfo(
+            SprintName: sprintRecord["sprint_name"]?.ToString() ?? "",
+            SprintId: int.TryParse(sprintRecord["sprint_id"]?.ToString(), out var id) ? id : 0,
+            BoardName: sprintRecord["board_name"]?.ToString() ?? "",
+            State: sprintRecord["state"]?.ToString() ?? "",
+            StartDate: TryParseDateTime(sprintRecord["startdate"]?.ToString()),
+            EndDate: TryParseDateTime(sprintRecord["enddate"]?.ToString()),
+            CompleteDate: TryParseDateTime(sprintRecord["completedate"]?.ToString()),
+            Goal: sprintRecord["goal"]?.ToString() ?? ""
+        );
+    }
+
+    public async Task<SprintBurndownResponse> GetSprintBurndownDataAsync(string sprintName)
+    {
+        // 獲取 Sprint 基本資訊
+        var sprintInfo = await GetSprintInfoAsync(sprintName);
+        
+        // 獲取該 Sprint 的所有 Issues
+        var allData = await FetchAndCacheDataAsync();
+        var sprintIssues = allData.Where(row => 
+            row.ContainsKey("sprint") && 
+            row["sprint"]?.ToString() == sprintName).ToList();
+
+        if (!sprintIssues.Any())
+        {
+            throw new ArgumentException($"No issues found for Sprint '{sprintName}'");
+        }
+
+        // 計算基本統計
+        var storyPointsColumn = FindStoryPointsColumn(sprintIssues);
+        var totalStoryPoints = CalculateTotalStoryPoints(sprintIssues, storyPointsColumn);
+        
+        var completedIssues = sprintIssues.Where(row => IsDoneStatus(row)).ToList();
+        var completedStoryPoints = CalculateTotalStoryPoints(completedIssues, storyPointsColumn);
+        var remainingStoryPoints = totalStoryPoints - completedStoryPoints;
+        var completionRate = totalStoryPoints > 0 ? (completedStoryPoints / totalStoryPoints * 100) : 0;
+
+        // 計算工作日
+        var startDate = sprintInfo.StartDate ?? DateTime.Now.AddDays(-14);
+        var endDate = sprintInfo.EndDate ?? DateTime.Now;
+        var now = DateTime.Now;
+
+        var totalWorkingDays = CalculateWorkingDays(startDate, endDate);
+        var daysElapsed = CalculateWorkingDays(startDate, DateTime.Now < endDate ? DateTime.Now : endDate);
+        var remainingWorkingDays = Math.Max(0, totalWorkingDays - daysElapsed);
+
+        // 判斷健康狀態
+        string status;
+        if (totalWorkingDays > 0)
+        {
+            var expectedCompletion = (double)daysElapsed / totalWorkingDays * 100;
+            var deviation = completionRate - expectedCompletion;
+
+            if (deviation >= -10) status = "normal";
+            else if (deviation >= -25) status = "warning";
+            else status = "danger";
+        }
+        else
+        {
+            status = "normal";
+        }
+
+        // 生成每日進度資料
+        var dailyProgress = GenerateDailyProgress(startDate, endDate, totalStoryPoints, sprintIssues, storyPointsColumn);
+        var chartData = FormatChartData(dailyProgress);
+
+        var sprintData = new SprintBurndownData(
+            SprintName: sprintName,
+            TotalStoryPoints: totalStoryPoints,
+            CompletedStoryPoints: completedStoryPoints,
+            RemainingStoryPoints: remainingStoryPoints,
+            CompletionRate: Math.Round(completionRate, 2),
+            Status: status,
+            TotalWorkingDays: totalWorkingDays,
+            DaysElapsed: daysElapsed,
+            RemainingWorkingDays: remainingWorkingDays
+        );
+
+        return new SprintBurndownResponse(sprintData, dailyProgress, chartData);
+    }
+
+    public async Task<List<Dictionary<string, object?>>> GetSprintListAsync()
+    {
+        return await FetchSprintValuesDataAsync();
+    }
+
+    private int CalculateWorkingDays(DateTime startDate, DateTime endDate)
+    {
+        if (startDate >= endDate) return 0;
+
+        var workingDays = 0;
+        var current = startDate;
+
+        while (current < endDate)
+        {
+            // Monday = 1, Sunday = 0
+            if (current.DayOfWeek != DayOfWeek.Saturday && current.DayOfWeek != DayOfWeek.Sunday)
+            {
+                workingDays++;
+            }
+            current = current.AddDays(1);
+        }
+
+        return workingDays;
+    }
+
+    private List<DayProgress> GenerateDailyProgress(DateTime startDate, DateTime endDate, double totalPoints, 
+        List<Dictionary<string, object?>> sprintIssues, string storyPointsColumn)
+    {
+        var dailyProgress = new List<DayProgress>();
+        var current = startDate;
+        var dayNumber = 0;
+        var totalWorkingDays = CalculateWorkingDays(startDate, endDate);
+
+        while (current <= endDate)
+        {
+            var isWorkingDay = current.DayOfWeek != DayOfWeek.Saturday && current.DayOfWeek != DayOfWeek.Sunday;
+
+            if (isWorkingDay)
+            {
+                dayNumber++;
+
+                // 理想燃燒線：線性下降
+                var idealRemaining = totalWorkingDays > 0 
+                    ? totalPoints * (1.0 - (double)dayNumber / totalWorkingDays)
+                    : totalPoints;
+
+                // 實際燃燒線：基於該日期前已完成的 Story Points
+                var completedByDate = sprintIssues
+                    .Where(row => IsDoneStatus(row) && IsResolvedByDate(row, current))
+                    .Sum(row => ParseStoryPoints(row, storyPointsColumn));
+
+                var actualRemaining = totalPoints - completedByDate;
+
+                dailyProgress.Add(new DayProgress(
+                    Day: dayNumber,
+                    Date: current.ToString("yyyy-MM-dd"),
+                    IdealRemaining: Math.Round(idealRemaining, 2),
+                    ActualRemaining: Math.Round(actualRemaining, 2),
+                    IsWorkingDay: true
+                ));
+            }
+
+            current = current.AddDays(1);
+        }
+
+        return dailyProgress;
+    }
+
+    private List<Dictionary<string, object>> FormatChartData(List<DayProgress> dailyProgress)
+    {
+        return dailyProgress
+            .Where(item => item.IsWorkingDay)
+            .Select(item => new Dictionary<string, object>
+            {
+                ["day"] = item.Day,
+                ["date"] = item.Date,
+                ["ideal"] = item.IdealRemaining,
+                ["actual"] = item.ActualRemaining
+            })
+            .ToList();
+    }
+
+    private bool IsResolvedByDate(Dictionary<string, object?> row, DateTime date)
+    {
+        var resolvedValue = row.ContainsKey("resolved") ? row["resolved"]?.ToString() : null;
+        if (string.IsNullOrEmpty(resolvedValue)) return false;
+
+        if (TryParseDateTime(resolvedValue) is DateTime resolvedDate)
+        {
+            return resolvedDate.Date <= date.Date;
+        }
+
+        return false;
+    }
+
+    private DateTime? TryParseDateTime(string? dateStr)
+    {
+        if (string.IsNullOrWhiteSpace(dateStr)) return null;
+
+        var formats = new[] {
+            "yyyy-MM-dd HH:mm:ss",
+            "yyyy-MM-dd",
+            "M/d/yyyy H:mm:ss",
+            "M/d/yyyy",
+            "MM/dd/yyyy HH:mm:ss",
+            "MM/dd/yyyy"
+        };
+
+        foreach (var format in formats)
+        {
+            if (DateTime.TryParseExact(dateStr, format, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result))
+            {
+                return result;
+            }
+        }
+
+        if (DateTime.TryParse(dateStr, out var parsed))
+        {
+            return parsed;
+        }
+
+        return null;
     }
 }

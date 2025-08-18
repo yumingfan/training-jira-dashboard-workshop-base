@@ -106,6 +106,65 @@ app.MapGet("/api/dashboard/status-distribution", async (
     }
 });
 
+// Sprint Burndown API endpoints
+app.MapGet("/api/sprint/burndown/{sprintName}", async (string sprintName, GoogleSheetsService sheetsService) =>
+{
+    try
+    {
+        var burndownData = await sheetsService.GetSprintBurndownDataAsync(sprintName);
+        return Results.Ok(burndownData);
+    }
+    catch (ArgumentException ex)
+    {
+        return Results.NotFound(ex.Message);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Failed to get sprint burndown data: {ex.Message}");
+    }
+});
+
+app.MapGet("/api/sprint/info/{sprintName}", async (string sprintName, GoogleSheetsService sheetsService) =>
+{
+    try
+    {
+        var sprintInfo = await sheetsService.GetSprintInfoAsync(sprintName);
+        return Results.Ok(sprintInfo);
+    }
+    catch (ArgumentException ex)
+    {
+        return Results.NotFound(ex.Message);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Failed to get sprint info: {ex.Message}");
+    }
+});
+
+app.MapGet("/api/sprint/list", async (GoogleSheetsService sheetsService) =>
+{
+    try
+    {
+        var sprintData = await sheetsService.GetSprintListAsync();
+        var sprints = sprintData.Select(row => new
+        {
+            sprint_name = row.ContainsKey("sprint_name") ? row["sprint_name"]?.ToString() : "",
+            sprint_id = row.ContainsKey("sprint_id") && int.TryParse(row["sprint_id"]?.ToString(), out var id) ? id : 0,
+            board_name = row.ContainsKey("board_name") ? row["board_name"]?.ToString() : "",
+            state = row.ContainsKey("state") ? row["state"]?.ToString() : "",
+            start_date = row.ContainsKey("startdate") ? row["startdate"]?.ToString() : null,
+            end_date = row.ContainsKey("enddate") ? row["enddate"]?.ToString() : null,
+            goal = row.ContainsKey("goal") ? row["goal"]?.ToString() : ""
+        }).ToList();
+
+        return Results.Ok(new { sprints });
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Failed to get sprint list: {ex.Message}");
+    }
+});
+
 // Configuration API endpoints
 app.MapGet("/api/config/sheet", (GoogleSheetsService sheetsService) =>
 {
