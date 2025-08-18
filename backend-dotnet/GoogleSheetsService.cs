@@ -530,7 +530,7 @@ public class GoogleSheetsService
         }
 
         // 生成每日進度資料
-        var dailyProgress = GenerateDailyProgress(startDate, endDate, totalStoryPoints, sprintIssues, storyPointsColumn);
+        var dailyProgress = GenerateDailyProgress(startDate, endDate, totalStoryPoints, sprintIssues, storyPointsColumn ?? "Story Points");
         var chartData = FormatChartData(dailyProgress);
 
         var sprintData = new SprintBurndownData(

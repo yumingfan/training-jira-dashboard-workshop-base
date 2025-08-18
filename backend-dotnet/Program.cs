@@ -180,7 +180,7 @@ app.MapGet("/api/config/sheet", (GoogleSheetsService sheetsService) =>
     }
 });
 
-app.MapPost("/api/config/sheet", async (
+app.MapPost("/api/config/sheet", (
     [FromBody] UpdateSheetConfigRequest request,
     [FromServices] GoogleSheetsService sheetsService) =>
 {
