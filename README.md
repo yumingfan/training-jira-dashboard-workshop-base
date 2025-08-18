@@ -65,6 +65,36 @@ Visit:
 
 **注意**：Jira Dashboard 頁面已完成 Google Sheets 整合，顯示真實資料並支援 Sprint 篩選功能。
 
+### 📋 更新資料來源 (Google Sheets)
+
+系統支援動態更新資料來源，無需重啟服務即可切換到不同的 Google Sheets：
+
+1. **進入 Google Sheets Table 頁面**：http://localhost:3000/google-sheets
+2. **點擊右上角的 "Configure Data Source" 按鈕**
+3. **貼上新的 Google Sheets URL**：
+   ```
+   例如：https://docs.google.com/spreadsheets/d/YOUR_NEW_SHEET_ID/edit#gid=0
+   ```
+4. **點擊 "Update Configuration"** 
+5. **系統會自動**：
+   - 解析 Sheet ID
+   - 更新資料來源
+   - 重新載入資料
+   - 顯示成功訊息
+
+**注意事項**：
+- ✅ **即時生效** - 無需重啟服務
+- ✅ **自動解析** - 支援各種 Google Sheets URL 格式
+- ✅ **錯誤提示** - 無效 URL 會顯示錯誤訊息
+- 📋 **資料格式** - 新的 Google Sheets 需要相同的欄位結構才能正常顯示
+
+**支援的 URL 格式**：
+```
+https://docs.google.com/spreadsheets/d/SHEET_ID/edit
+https://docs.google.com/spreadsheets/d/SHEET_ID/edit#gid=0
+https://docs.google.com/spreadsheets/d/SHEET_ID/edit?usp=sharing
+```
+
 ### 🧪 第一個任務：測試開發環境
 
 環境啟動成功後，讓我們確認即時開發功能是否正常運作：
@@ -215,6 +245,7 @@ workshop.bat test-backend     # 只執行後端測試
 - ✅ **狀態分布圖表** - 視覺化 Issue 狀態分布（Bar Chart）
 - ✅ **Sprint 篩選功能** - 動態篩選不同 Sprint 的資料
 - ✅ **Google Sheets 整合** - 即時讀取真實專案資料
+- ✅ **動態資料來源切換** - 無需重啟即可更換 Google Sheets 資料來源
 - ✅ **響應式設計** - 支援桌面和行動裝置
 
 **無需額外設定步驟，使用 Docker 環境即可立即體驗完整功能！**
@@ -249,6 +280,7 @@ workshop.bat test-backend     # 只執行後端測試
 - 📈 **資料視覺化** - 圖表和統計
 - 🔍 **篩選和搜尋** - 進階問題篩選
 - 👥 **使用者管理** - 使用者檔案和指派
+- 🔗 **資料來源管理** - 動態切換 Google Sheets 資料來源
 - 📱 **響應式設計** - 行動裝置友善介面
 
 ### 技術功能
