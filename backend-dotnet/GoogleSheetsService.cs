@@ -23,7 +23,11 @@ public class GoogleSheetsService
     public GoogleSheetsService(HttpClient httpClient, IConfiguration configuration)
     {
         _httpClient = httpClient;
-        _sheetId = configuration["GoogleSheets:SheetId"] ?? throw new InvalidOperationException("SheetId not configured");
+        var defaultSheetId = configuration["GoogleSheets:SheetId"] ?? throw new InvalidOperationException("SheetId not configured");
+        
+        // 從檔案載入持久化的 Sheet ID，如果沒有則使用預設值
+        _sheetId = LoadSheetIdFromFile(defaultSheetId);
+        
         //_sheetName = configuration["GoogleSheets:Sheet_rawData"] ?? throw new InvalidOperationException("Sheet_rawData not configured");
         _sheetRawData = configuration["GoogleSheets:Sheet_rawData"] ?? throw new InvalidOperationException("Sheet_rawData not configured");
         _sheetRawStatusTime = configuration["GoogleSheets:Sheet_rawStatusTime"] ?? throw new InvalidOperationException("Sheet_rawStatusTime not configured");
@@ -362,6 +366,46 @@ public class GoogleSheetsService
 
         _sheetId = newSheetId;
         ClearCache();
+        
+        // 持久化到檔案
+        SaveSheetIdToFile(newSheetId);
+    }
+
+    private void SaveSheetIdToFile(string sheetId)
+    {
+        try
+        {
+            var configPath = "/app/current_sheet_id.txt";
+            File.WriteAllText(configPath, sheetId);
+        }
+        catch (Exception ex)
+        {
+            // 記錄錯誤但不中斷服務
+            Console.WriteLine($"Warning: Failed to save Sheet ID to file: {ex.Message}");
+        }
+    }
+
+    private string LoadSheetIdFromFile(string defaultSheetId)
+    {
+        try
+        {
+            var configPath = "/app/current_sheet_id.txt";
+            if (File.Exists(configPath))
+            {
+                var savedSheetId = File.ReadAllText(configPath).Trim();
+                if (!string.IsNullOrWhiteSpace(savedSheetId))
+                {
+                    Console.WriteLine($"Loaded Sheet ID from file: {savedSheetId}");
+                    return savedSheetId;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Warning: Failed to load Sheet ID from file: {ex.Message}");
+        }
+        
+        return defaultSheetId;
     }
 
     public void ClearCache()
