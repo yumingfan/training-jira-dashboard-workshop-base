@@ -215,12 +215,18 @@ interface TableSummary {
 }
 ```
 
-**後端 Pydantic 模型：**
-```python
-class TableDataResponse(BaseModel):
-    data: List[Dict[str, Any]]
-    pagination: PaginationInfo
-    filters: FilterInfo
+**後端 C# 模型：**
+```csharp
+public record SprintBurndownResponse
+{
+    public List<DayProgress> IdealBurndown { get; init; } = new();
+    public List<DayProgress> ActualBurndown { get; init; } = new();
+    public string HealthStatus { get; init; } = "";
+    public double CompletionRate { get; init; }
+    public int TotalDays { get; init; }
+    public int CurrentWorkingDay { get; init; }
+    public int RemainingDays { get; init; }
+}
 ```
 
 ## Google Sheets 整合
@@ -288,7 +294,7 @@ class TableDataResponse(BaseModel):
 
 - Node.js >= 18.0.0
 - npm >= 8.0.0
-- Python >= 3.11
+- .NET 8 SDK
 - Docker Desktop (可選)
 
 ### 快速啟動
@@ -303,7 +309,7 @@ npm run dev    # 啟動前後端
 
 # 方式三：分別啟動
 cd frontend && npm run dev  # 前端 (http://localhost:3000)
-cd backend && uvicorn main:app --reload  # 後端 (http://localhost:8000)
+cd backend-dotnet && dotnet run  # 後端 (http://localhost:8001)
 ```
 
 ### 環境變數
@@ -326,13 +332,6 @@ NEXT_PUBLIC_API_URL=http://localhost:8001
 }
 ```
 
-**備用後端 (Python)** (`backend/config.py`)：
-```python
-GOOGLE_SHEET_ID = "1RmJjghgiV3XWLl2BaxT-md8CP3pqb1Wuk-EhFoqp1VM"
-SHEET_NAME = "rawData"
-API_PORT = 8000
-CACHE_DURATION = 300  # 5 分鐘
-```
 
 ## 效能優化策略
 
@@ -348,12 +347,12 @@ CACHE_DURATION = 300  # 5 分鐘
 1. **資料快取**：5 分鐘 Google Sheets 資料快取
 2. **分頁處理**：避免一次載入所有資料
 3. **欄位限制**：僅讀取必要欄位（到 Column W）
-4. **非同步處理**：FastAPI 原生支援
+4. **非同步處理**：ASP.NET Core 原生支援
 
 ## 安全性考量
 
 1. **CORS 設定**：限制允許的來源
-2. **輸入驗證**：Pydantic 自動驗證
+2. **輸入驗證**：ASP.NET Core 模型驗證
 3. **錯誤處理**：避免敏感資訊洩露
 4. **無需憑證**：使用公開 Google Sheets，避免金鑰管理
 
@@ -378,12 +377,6 @@ services:
       - GoogleSheets__SprintSheet=GetJiraSprintValues
       - CacheDuration=300
     
-  backend:
-    build: ./backend
-    ports: ["8000:8000"]
-    environment:
-      - GOOGLE_SHEET_ID=1RmJjghgiV3XWLl2BaxT-md8CP3pqb1Wuk-EhFoqp1VM
-      - SHEET_NAME=rawData
 ```
 
 ### 生產環境建議
@@ -434,9 +427,9 @@ services:
    - 元件拆分保持單一職責
 
 2. **後端**：
-   - 使用 Type Hints
-   - 遵循 PEP 8 規範
-   - 適當的錯誤處理
+   - 使用 C# 型別安全
+   - 遵循 .NET 編碼規範
+   - 適當的錯誤處理和記錄
 
 ### Git 工作流程
 
@@ -468,16 +461,22 @@ services:
 
 ### 後端測試
 
-- **測試框架**：pytest
-- **測試位置**：`backend/tests/`
-- **執行方式**：`make test-backend` 或 `workshop.bat test-backend`
+- **測試框架**：xUnit + ASP.NET Core Test Host
+- **測試位置**：`backend-dotnet/SimpleTests.cs`
+- **執行方式**：`make test-backend-dotnet` 或 `dotnet test`
 - **測試範例**：
-  ```python
-  def test_health_check():
-      """測試健康檢查端點"""
-      response = client.get("/api/health")
-      assert response.status_code == 200
-      assert response.json()["status"] == "healthy"
+  ```csharp
+  [Fact]
+  public async Task GetSprintBurndown_ReturnsValidResponse()
+  {
+      // Arrange & Act
+      var response = await _client.GetAsync("/api/sprint-burndown");
+      
+      // Assert
+      response.EnsureSuccessStatusCode();
+      var content = await response.Content.ReadAsStringAsync();
+      Assert.Contains("idealBurndown", content);
+  }
   ```
 
 ### 測試執行指令
@@ -493,7 +492,7 @@ make test
 make test-frontend
 
 # 只執行後端測試
-make test-backend
+make test-backend-dotnet
 ```
 
 ## 相關文件
