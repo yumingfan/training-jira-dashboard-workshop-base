@@ -26,7 +26,8 @@
       "Bash(git log:*)",
       "Bash(dotnet build)",
       "Bash(make:*)",
-      "Bash(file:*)"
+      "Bash(file:*)",
+      "Bash(git rm:*)"
     ],
     "deny": []
   }
