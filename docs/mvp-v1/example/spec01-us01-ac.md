@@ -1,96 +1,81 @@
-# Acceptance Criteria: US-001 Sprint 燃盡圖視覺化
+# Acceptance Criteria: US001 Sprint 燃盡圖視覺化與進度警示
 
 > **檔案編號**: AC-001-sprint-burndown-visualization  
 > **建立日期**: 2025-08-18  
 > **最後更新**: 2025-08-28  
 > **狀態**: 已實現  
-> **對應 User Story**: [US-001](./spec01-us01-sprintprogress.md#us-001-sprint-燃盡圖視覺化)
+> **對應 User Story**: [US001](./spec01-us01-sprintprogress.md#us-001-sprint-燃盡圖視覺化)  
+> **對應 Feature Spec**: [SPEC-001-sprint-progress-visualization](./spec01-progress-v2.md)
 
 ## 📋 User Story 回顧
 
-**ID-001**: 作為 Scrum Master，我希望能在儀表板上看到即時更新的 Sprint 燃盡圖，並顯示當前 Sprint 完成率（已完成故事點數/總故事點數），以便在每日站會中快速識別進度是否落後於預期，並引導團隊討論真正的障礙。
+**US001**: 作為 Scrum Master，我希望能在儀表板上看到即時更新的 Sprint 燃盡圖，並根據進度健康狀態顯示不同顏色的進度條和燃盡線，以便在每日站會中快速識別進度是否落後於預期，並引導團隊討論真正的障礙。
 
 ## 🎯 驗收標準 (Acceptance Criteria)
 
-### AC-001-01: 正常顯示燃盡圖與完成率
-
-**場景：** Scrum Master 查看正常進行中的 Sprint 燃盡圖
+### AC01: Sprint 燃盡圖正常顯示與健康狀態
 
 ```gherkin
-Given Sprint 2 正在進行中
-And 總故事點數為 20 SP
-And 已完成 13 SP，剩餘 7 SP
-And 今天是 Sprint 的第 7 天，共 10 天
+場景：Scrum Master 查看正常進度的 Sprint
+Given 有一個正在進行的 Sprint
+And 實際進度符合或超前理想進度
 When Scrum Master 進入儀表板頁面
-Then 應顯示 Sprint 燃盡圖
-And 顯示完成率為 "65% 完成"
-And 顯示進度詳情 "已完成: 13 SP | 剩餘: 7 SP | 總計: 20 SP"
-And 燃盡圖顯示理想燃盡線（從 20 SP 線性遞減至 0）
-And 燃盡圖顯示實際燃盡線（反映當前 13 SP 的完成狀況）
-And 進度條顯示 65% 的視覺進度
+Then 應顯示完整的 Sprint 燃盡圖
+And 燃盡圖顯示灰色虛線理想線
+And 燃盡圖顯示綠色實際線（僅到當前工作日）
+And 進度條顯示綠色
+And 右上角顯示綠色 "正常進度" 健康狀態
+And 顯示完成率百分比和故事點數統計
 ```
 
 ---
 
-### AC-001-02: 進度健康度色彩指示 - 正常狀態
-
-**場景：** Sprint 進度正常或超前時的視覺表現
+### AC02: 進度落後時的黃色警示狀態
 
 ```gherkin
-Given Sprint 正在進行中
-And 實際進度等於或超前理想進度
-And 當前完成率為 70%，時間進度為 60%
-When Scrum Master 查看儀表板
-Then 進度條應顯示綠色
-And 右上角健康狀態 badge 顯示綠色 "正常進度"
-And 燃盡圖實際線應為綠色
-And 不顯示任何警告圖示
-
-**✅ 實現確認**: 功能已完成，進度條顏色與健康狀態同步
-```
-
----
-
-### AC-001-03: 進度健康度色彩指示 - 警示狀態
-
-**場景：** Sprint 進度稍微落後時的視覺警示
-
-```gherkin
-Given Sprint 正在進行中
-And 實際進度落後理想進度 10-20%
-And 當前完成率為 50%，時間進度為 70%
+場景：Sprint 進度稍微落後的警示
+Given 有一個正在進行的 Sprint
+And 實際進度落後理想進度 10-25% 之間
 When Scrum Master 查看儀表板
 Then 進度條應顯示黃色
 And 右上角健康狀態 badge 顯示黃色 "稍微落後"
 And 燃盡圖實際線應為黃色
-And 顯示輕微警告圖示（⚠️）
-
-**✅ 實現確認**: 功能已完成，黃色警示狀態正常運作
+And 系統提供適當的警示提醒
 ```
 
 ---
 
-### AC-001-04: 進度健康度色彩指示 - 危險狀態
-
-**場景：** Sprint 進度嚴重落後時的視覺警示
+### AC03: 嚴重落後時的紅色危險警示
 
 ```gherkin
-Given Sprint 正在進行中
-And 實際進度落後理想進度 20% 以上
-And 當前完成率為 30%，時間進度為 80%
+場景：Sprint 進度嚴重落後的危險警示
+Given 有一個正在進行的 Sprint
+And 實際進度落後理想進度 25% 以上
 When Scrum Master 查看儀表板
 Then 進度條應顯示紅色
 And 右上角健康狀態 badge 顯示紅色 "嚴重落後"
 And 燃盡圖實際線應為紅色
-And 顯示嚴重警告圖示（🚨）
-And 在進度區域顯示醒目的 "進度落後" 提示
-
-**✅ 實現確認**: 功能已完成，紅色危險狀態正常運作
+And 系統提供明顯的危險警示
 ```
 
 ---
 
-### AC-001-05: 空資料或無效資料處理
+### AC04: 燃盡圖時間邊界正確處理
+
+```gherkin
+場景：實際燃盡線只顯示到當前工作日
+Given Sprint 為期 10 個工作日
+And 今天是第 8 個工作日
+When 系統生成燃盡圖資料
+Then 理想線應顯示完整的 Day 1 到 Day 10
+And 實際線應只顯示 Day 1 到 Day 8 的數據
+And Day 9 和 Day 10 不應有實際數據點
+And hover 未來日期時應顯示 "實際剩餘: 未來日期"
+```
+
+---
+
+### AC05: 空資料或無效資料處理
 
 **場景：** Google Sheets 資料為空或無效時的錯誤處理
 
@@ -107,7 +92,7 @@ And 提供重新載入按鈕
 
 ---
 
-### AC-001-08: Sprint 時間邊界處理
+### AC06: Sprint 時間邊界處理
 
 **場景：** Sprint 開始第一天的顯示
 
@@ -134,7 +119,7 @@ And 如果進度落後應顯示明顯的風險警示
 
 ---
 
-### AC-001-09: 燃盡圖資料點精確性
+### AC07: 燃盡圖資料點精確性
 
 **場景：** 燃盡圖資料點的準確計算
 
@@ -172,9 +157,10 @@ And 週末或非工作日應正確處理（不計入工作天數）
 | ---------- | ---- | -------- | ------ |
 | 2025-08-18 | 1.0  | 初版建立，基於 US-001 需求設計完整的驗收標準 | PM Team |
 | 2025-08-28 | 1.1  | 更新實現狀態，確認核心 AC 項目已完成 | Dev Team |
+| 2025-08-28 | 2.0  | 同步新版 Feature Spec，簡化 AC 描述專注行為邏輯 | Dev Team |
 
 ## 🔗 相關文件
 
 - **User Story**: [`spec01-us01-sprintprogress.md`](./spec01-us01-sprintprogress.md)
-- **Feature Spec**: [`spec01-progress.md`](./spec01-progress.md)
+- **Feature Spec**: [`spec01-progress-v2.md`](./spec01-progress-v2.md)
 - **下一階段**: Test Cases（待建立）
