@@ -2,7 +2,6 @@
 
 import React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { AlertTriangle, TrendingUp, AlertCircle } from "lucide-react"
 import type { SprintBurndownData } from "@/hooks/use-sprint-burndown"
@@ -79,13 +78,16 @@ export function CompletionRateCard({ sprintData, className }: CompletionRateCard
             <p className="text-sm text-muted-foreground">整體進度</p>
             <p className="text-lg font-bold">{sprintData.completion_rate}%</p>
           </div>
-          <Progress 
-            value={sprintData.completion_rate} 
-            className="h-3"
-            style={{ 
-              '--progress-background': statusConfig.color 
-            } as React.CSSProperties}
-          />
+          <div className="relative h-3 w-full overflow-hidden rounded-full bg-secondary">
+            <div 
+              className="h-full transition-all rounded-full"
+              style={{ 
+                width: `${sprintData.completion_rate}%`,
+                backgroundColor: statusConfig.color.includes('green') ? '#22c55e' :
+                                 statusConfig.color.includes('yellow') ? '#eab308' : '#ef4444'
+              }}
+            />
+          </div>
         </div>
 
         {/* 故事點數分解 */}
