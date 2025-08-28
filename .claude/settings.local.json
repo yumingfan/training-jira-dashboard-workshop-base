@@ -22,7 +22,10 @@
       "Bash(python3 -m pip install:*)",
       "Bash(python3:*)",
       "Bash(kill:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(git log:*)",
+      "Bash(dotnet build)",
+      "Bash(make:*)"
     ],
     "deny": []
   }

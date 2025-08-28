@@ -62,14 +62,23 @@ export function BurndownChart({ chartData, sprintData, className }: BurndownChar
             <div className="w-3 h-3 rounded-full bg-gray-400"></div>
             <span className="text-sm">理想剩餘: {data.ideal.toFixed(1)} SP</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div 
-              className="w-3 h-3 rounded-full" 
-              style={{ backgroundColor: actualLineColor }}
-            ></div>
-            <span className="text-sm">實際剩餘: {data.actual.toFixed(1)} SP</span>
-          </div>
-          {data.ideal !== data.actual && (
+          {data.actual !== null && data.actual !== undefined ? (
+            <div className="flex items-center gap-2">
+              <div 
+                className="w-3 h-3 rounded-full" 
+                style={{ backgroundColor: actualLineColor }}
+              ></div>
+              <span className="text-sm">實際剩餘: {data.actual.toFixed(1)} SP</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <div 
+                className="w-3 h-3 rounded-full bg-gray-300" 
+              ></div>
+              <span className="text-sm text-muted-foreground">實際剩餘: 未來日期</span>
+            </div>
+          )}
+          {data.actual !== null && data.actual !== undefined && data.ideal !== data.actual && (
             <div className="text-xs text-muted-foreground pt-1 border-t">
               差異: {(data.actual - data.ideal).toFixed(1)} SP
               {data.actual > data.ideal ? ' (落後)' : ' (超前)'}

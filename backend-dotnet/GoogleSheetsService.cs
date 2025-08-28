@@ -530,7 +530,7 @@ public class GoogleSheetsService
         }
 
         // 生成每日進度資料
-        var dailyProgress = GenerateDailyProgress(startDate, endDate, totalStoryPoints, sprintIssues, storyPointsColumn ?? "Story Points");
+        var dailyProgress = GenerateDailyProgress(startDate, endDate, totalStoryPoints, sprintIssues, storyPointsColumn ?? "Story Points", daysElapsed);
         var chartData = FormatChartData(dailyProgress);
 
         var sprintData = new SprintBurndownData(
@@ -574,7 +574,7 @@ public class GoogleSheetsService
     }
 
     private List<DayProgress> GenerateDailyProgress(DateTime startDate, DateTime endDate, double totalPoints, 
-        List<Dictionary<string, object?>> sprintIssues, string storyPointsColumn)
+        List<Dictionary<string, object?>> sprintIssues, string storyPointsColumn, int currentWorkingDay)
     {
         var dailyProgress = new List<DayProgress>();
         var current = startDate;
@@ -589,23 +589,27 @@ public class GoogleSheetsService
             {
                 dayNumber++;
 
-                // 理想燃燒線：線性下降
+                // 理想燃燒線：線性下降（顯示完整的理想線）
                 var idealRemaining = totalWorkingDays > 0 
                     ? totalPoints * (1.0 - (double)dayNumber / totalWorkingDays)
                     : totalPoints;
 
-                // 實際燃燒線：基於該日期前已完成的 Story Points
-                var completedByDate = sprintIssues
-                    .Where(row => IsDoneStatus(row) && IsResolvedByDate(row, current))
-                    .Sum(row => ParseStoryPoints(row, storyPointsColumn));
-
-                var actualRemaining = totalPoints - completedByDate;
+                // 實際燃燒線：只顯示到當前工作日為止
+                double? actualRemaining = null;
+                if (dayNumber <= currentWorkingDay)
+                {
+                    var completedByDate = sprintIssues
+                        .Where(row => IsDoneStatus(row) && IsResolvedByDate(row, current))
+                        .Sum(row => ParseStoryPoints(row, storyPointsColumn));
+                    
+                    actualRemaining = totalPoints - completedByDate;
+                }
 
                 dailyProgress.Add(new DayProgress(
                     Day: dayNumber,
                     Date: current.ToString("yyyy-MM-dd"),
                     IdealRemaining: Math.Round(idealRemaining, 2),
-                    ActualRemaining: Math.Round(actualRemaining, 2),
+                    ActualRemaining: actualRemaining.HasValue ? Math.Round(actualRemaining.Value, 2) : (double?)null,
                     IsWorkingDay: true
                 ));
             }

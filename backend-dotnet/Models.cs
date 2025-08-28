@@ -85,7 +85,7 @@ public record DayProgress(
     [property: JsonPropertyName("day")] int Day,
     [property: JsonPropertyName("date")] string Date,
     [property: JsonPropertyName("ideal_remaining")] double IdealRemaining,
-    [property: JsonPropertyName("actual_remaining")] double ActualRemaining,
+    [property: JsonPropertyName("actual_remaining")] double? ActualRemaining,
     [property: JsonPropertyName("is_working_day")] bool IsWorkingDay
 );
 
