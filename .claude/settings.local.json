@@ -25,7 +25,8 @@
       "Bash(npm run build:*)",
       "Bash(git log:*)",
       "Bash(dotnet build)",
-      "Bash(make:*)"
+      "Bash(make:*)",
+      "Bash(file:*)"
     ],
     "deny": []
   }
