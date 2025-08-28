@@ -37,17 +37,11 @@ logs-frontend: ## 查看前端 logs
 logs-backend: ## 查看 .NET 後端 logs
 	docker-compose logs -f backend-dotnet
 
-logs-backend-dotnet: ## 查看 .NET 後端 logs
-	docker-compose logs -f backend-dotnet
-
 # 進入容器
 shell-frontend: ## 進入前端容器
 	docker-compose exec frontend sh
 
 shell-backend: ## 進入 .NET 後端容器
-	docker-compose exec backend-dotnet bash
-
-shell-backend-dotnet: ## 進入 .NET 後端容器
 	docker-compose exec backend-dotnet bash
 
 # 測試和檢查
@@ -57,7 +51,7 @@ ps: ## 查看服務狀態
 test-frontend: ## 執行前端測試
 	docker-compose exec frontend npm test
 
-test-backend-dotnet: ## 執行 .NET 後端測試
+test-backend: ## 執行 .NET 後端測試
 	docker-compose exec backend-dotnet dotnet test
 
 test: ## 執行所有測試
@@ -95,8 +89,7 @@ workshop-start: ## 🎯 課程開始 - 啟動所有服務
 	@echo ""
 	@echo "🎉 環境已就緒！"
 	@echo "📱 前端: http://localhost:3000"
-	@echo "🔧 後端: http://localhost:8001"
-	@echo "📚 (.NET 後端目前無 API 文件頁面)"
+	@echo "🔧 .NET 後端: http://localhost:8001"
 
 workshop-stop: ## 🛑 課程結束 - 停止所有服務
 	@echo "🛑 停止 Workshop 環境..."

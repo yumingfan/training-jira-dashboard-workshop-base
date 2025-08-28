@@ -15,11 +15,9 @@ if "%1"=="ps" goto ps
 if "%1"=="test" goto test
 if "%1"=="test-frontend" goto test-frontend
 if "%1"=="test-backend" goto test-backend
-if "%1"=="test-backend-dotnet" goto test-backend-dotnet
 if "%1"=="shell-frontend" goto shell-frontend
 if "%1"=="shell-backend" goto shell-backend
-if "%1"=="shell-backend-dotnet" goto shell-backend-dotnet
-if "%1"=="logs-backend-dotnet" goto logs-backend-dotnet
+if "%1"=="logs-backend" goto logs-backend
 if "%1"=="start" goto workshop-start
 if "%1"=="stop" goto workshop-stop
 if "%1"=="reset" goto workshop-reset
@@ -34,15 +32,13 @@ echo   workshop-stop   - 停止所有服務
 echo   workshop-reset  - 重置環境
 echo   health         - 檢查服務健康狀態
 echo   logs           - 查看所有服務 logs
-echo   logs-backend-dotnet - 查看 .NET 後端 logs
+echo   logs-backend   - 查看 .NET 後端 logs
 echo   ps             - 查看服務狀態
 echo   test           - 執行所有測試
 echo   test-frontend  - 執行前端測試
-echo   test-backend   - 執行後端測試
-echo   test-backend-dotnet - 執行 .NET 後端測試
+echo   test-backend   - 執行 .NET 後端測試
 echo   shell-frontend - 進入前端容器
-echo   shell-backend  - 進入後端容器
-echo   shell-backend-dotnet - 進入 .NET 後端容器
+echo   shell-backend  - 進入 .NET 後端容器
 echo   help           - 顯示此說明
 echo.
 echo 範例: workshop.bat workshop-start
@@ -57,8 +53,6 @@ call :health
 echo.
 echo 🎉 環境已就緒！
 echo 📱 前端: http://localhost:3000
-echo 🔧 Python 後端: http://localhost:8000
-echo 📚 Python API 文件: http://localhost:8000/docs
 echo 🔧 .NET 後端: http://localhost:8001
 goto end
 
@@ -80,8 +74,6 @@ goto end
 :health
 echo 🔍 檢查前端服務...
 powershell -Command "try { Invoke-WebRequest -Uri 'http://localhost:3000' -UseBasicParsing | Out-Null; Write-Host '✅ 前端正常' } catch { Write-Host '❌ 前端異常' }"
-echo 🔍 檢查 Python 後端服務...
-powershell -Command "try { Invoke-WebRequest -Uri 'http://localhost:8000/api/health' -UseBasicParsing | Out-Null; Write-Host '✅ Python 後端正常' } catch { Write-Host '❌ Python 後端異常' }"
 echo 🔍 檢查 .NET 後端服務...
 powershell -Command "try { Invoke-WebRequest -Uri 'http://localhost:8001/api/table/summary' -UseBasicParsing | Out-Null; Write-Host '✅ .NET 後端正常' } catch { Write-Host '❌ .NET 後端異常' }"
 goto end
@@ -90,7 +82,7 @@ goto end
 docker-compose logs -f
 goto end
 
-:logs-backend-dotnet
+:logs-backend
 docker-compose logs -f backend-dotnet
 goto end
 
@@ -104,9 +96,6 @@ echo.
 echo 執行前端測試...
 docker-compose exec frontend npm test
 echo.
-echo 執行 Python 後端測試...
-docker-compose exec backend python -m pytest
-echo.
 echo 執行 .NET 後端測試...
 docker-compose exec backend-dotnet dotnet test
 goto end
@@ -117,11 +106,6 @@ docker-compose exec frontend npm test
 goto end
 
 :test-backend
-echo 🧪 執行後端測試...
-docker-compose exec backend python -m pytest
-goto end
-
-:test-backend-dotnet
 echo 🧪 執行 .NET 後端測試...
 docker-compose exec backend-dotnet dotnet test
 goto end
@@ -132,11 +116,6 @@ docker-compose exec frontend sh
 goto end
 
 :shell-backend
-echo 進入後端容器...
-docker-compose exec backend bash
-goto end
-
-:shell-backend-dotnet
 echo 進入 .NET 後端容器...
 docker-compose exec backend-dotnet bash
 goto end
