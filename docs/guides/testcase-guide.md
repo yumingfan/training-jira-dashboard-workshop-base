@@ -1,14 +1,14 @@
-## Test Case 撰寫指引（testcase-guide.md）
+# Test Case 撰寫指引
 
 ## 為什麼要撰寫 Test Case？
 
-測試案例（Test Case）是為了驗證系統是否依據驗收標準正確實作的具體步驟，透過「操作 + 驗證」的形式，確保功能穩定、可用且符合預期行為。
+測試案例（Test Case）是基於 **Acceptance Criteria** 撰寫的具體測試步驟，用來驗證系統是否按照驗收標準正確實作。每個 Test Case 都應該直接對應一個 AC 場景。
 
-**Test Case 的價值：**
-- 🎯 **驗證實作**：確認開發結果符合 Acceptance Criteria
+**Test Case 與 AC 的關係：**
+- 🔗 **一對一對應**：每個 AC 場景至少對應一個 Test Case
+- 🎯 **直接驗證**：測試步驟直接對應 AC 中的 Given-When-Then
 - 🔄 **回歸測試**：確保新功能不影響既有功能
 - 📋 **自動化基礎**：提供測試腳本撰寫的詳細規格
-- 📊 **品質保證**：系統化驗證各種情境和邊界條件
 
 ## 測試案例格式建議
 
@@ -18,7 +18,7 @@
 |------|------|------|
 | **測試案例編號** | 唯一識別碼，方便追蹤與關聯 | TC-001, TC-LOGIN-001 |
 | **測試目標** | 驗證的具體行為或條件 | 驗證使用者成功登入系統 |
-| **相關 User Story** | 對應的功能需求或故事 | ID-005: 作為註冊使用者... |
+| **相關 User Story** | 對應的功能需求或故事 | US005: 作為註冊使用者... |
 | **相關 AC 場景** | 對應的 Acceptance Criteria 場景 | 場景：成功登入系統 |
 | **測試前置條件** | 必要系統狀態、資料準備 | 使用者帳號已註冊並啟用 |
 | **測試步驟** | 實際操作流程（具體、可執行） | 1. 開啟登入頁面<br>2. 輸入帳號... |
@@ -32,7 +32,7 @@
 ### 從 User Story → AC → Test Case 的完整流程
 
 **User Story：**
-ID-005: 作為註冊使用者，我希望能透過帳號密碼登入系統，以便存取我的個人儀表板。
+US005: 作為註冊使用者，我希望能透過帳號密碼登入系統，以便存取我的個人儀表板。
 
 **對應的 Acceptance Criteria：**
 ```gherkin
@@ -51,7 +51,7 @@ And 頁面顯示歡迎訊息
 |------|------|
 | **測試案例編號** | TC-LOGIN-001 |
 | **測試目標** | 驗證註冊使用者能成功登入並存取儀表板 |
-| **相關 User Story** | ID-005: 作為註冊使用者，我希望能透過帳號密碼登入系統... |
+| **相關 User Story** | US005: 作為註冊使用者，我希望能透過帳號密碼登入系統... |
 | **相關 AC 場景** | 場景：成功登入系統 |
 | **測試前置條件** | 1. 測試帳號 "test@example.com" 已存在於系統<br>2. 帳號狀態為啟用<br>3. 瀏覽器已開啟登入頁面 |
 | **測試步驟** | 1. 在帳號欄位輸入 "test@example.com"<br>2. 在密碼欄位輸入 "ValidPassword123"<br>3. 點擊 "登入" 按鈕<br>4. 等待頁面載入完成 |
@@ -153,10 +153,13 @@ And 頁面顯示歡迎訊息
 
 ⸻
 
-## 📎 搭配其他文件的關聯
+## 🔗 相關文件
 
-| 文件名稱 | 焦點 | 產出內容 |
-|---------|------|---------|
-| `feature-spec-template.md` | 功能規格撰寫 | 完整功能規格文件 |
-| `user-story-guide.md` | 用戶故事 | 使用者導向的需求描述 |
-| `acceptance-criteria-guide.md` | 撰寫驗收標準 | 「Given… When… Then…」 |
+| 文件 | 用途 |
+|------|------|
+| [user-story-guide.md](./user-story-guide.md) | User Story 撰寫指引 |
+| [acceptance-criteria-guide.md](./acceptance-criteria-guide.md) | Acceptance Criteria 撰寫指引 |
+| [feature-spec-template.md](./feature-spec-template.md) | 功能規格模板（含 Test Cases） |
+| [PRD.md](../mvp-v1/PRD.md) | PRD 範例（含完整測試案例） |
+
+> **工作流程**：User Story → Acceptance Criteria → **Test Cases** → 開發實作 → 測試驗證
