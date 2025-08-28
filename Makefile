@@ -34,8 +34,8 @@ logs: ## 查看所有服務 logs
 logs-frontend: ## 查看前端 logs
 	docker-compose logs -f frontend
 
-logs-backend: ## 查看後端 logs
-	docker-compose logs -f backend
+logs-backend: ## 查看 .NET 後端 logs
+	docker-compose logs -f backend-dotnet
 
 logs-backend-dotnet: ## 查看 .NET 後端 logs
 	docker-compose logs -f backend-dotnet
@@ -44,8 +44,8 @@ logs-backend-dotnet: ## 查看 .NET 後端 logs
 shell-frontend: ## 進入前端容器
 	docker-compose exec frontend sh
 
-shell-backend: ## 進入後端容器
-	docker-compose exec backend bash
+shell-backend: ## 進入 .NET 後端容器
+	docker-compose exec backend-dotnet bash
 
 shell-backend-dotnet: ## 進入 .NET 後端容器
 	docker-compose exec backend-dotnet bash
@@ -57,25 +57,18 @@ ps: ## 查看服務狀態
 test-frontend: ## 執行前端測試
 	docker-compose exec frontend npm test
 
-test-backend: ## 執行後端測試
-	docker-compose exec backend python -m pytest
-
 test-backend-dotnet: ## 執行 .NET 後端測試
 	docker-compose exec backend-dotnet dotnet test
 
 test: ## 執行所有測試
 	@echo "🧪 執行前端測試..."
 	@docker-compose exec frontend npm test
-	@echo "🧪 執行 Python 後端測試..."
-	@docker-compose exec backend python -m pytest
 	@echo "🧪 執行 .NET 後端測試..."
 	@docker-compose exec backend-dotnet dotnet test
 
 health: ## 檢查服務健康狀態
 	@echo "🔍 檢查前端服務..."
 	@curl -f http://localhost:3000 > /dev/null 2>&1 && echo "✅ 前端正常" || echo "❌ 前端異常"
-	@echo "🔍 檢查 Python 後端服務..."
-	@curl -f http://localhost:8000/api/health > /dev/null 2>&1 && echo "✅ Python 後端正常" || echo "❌ Python 後端異常"
 	@echo "🔍 檢查 .NET 後端服務..."
 	@curl -f http://localhost:8001/api/table/summary > /dev/null 2>&1 && echo "✅ .NET 後端正常" || echo "❌ .NET 後端異常"
 
@@ -90,7 +83,6 @@ clean-all: ## 完全清理 (包含 volumes)
 # 安裝和設定
 install: ## 安裝專案依賴 (在容器內)
 	docker-compose exec frontend npm install
-	docker-compose exec backend pip install -r requirements.txt
 	docker-compose exec backend-dotnet dotnet restore
 
 # 課程專用指令
