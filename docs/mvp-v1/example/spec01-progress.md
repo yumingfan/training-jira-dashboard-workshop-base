@@ -182,10 +182,10 @@
 當 Sprint 進度符合預期或超前時，顯示綠色狀態：
 
 **完成率進度條:**
-![綠色進度條示例](../assets/DEMO-green-sprint-progress.png)
+![綠色進度條示例](../../assets/DEMO-green-sprint-progress.png)
 
 **燃盡圖:**
-![綠色燃盡圖示例](../assets/DEMO-green-sprint-burndown.png)
+![綠色燃盡圖示例](../../assets/DEMO-green-sprint-burndown.png)
 
 - **完成率**: 97.71% (342/350 SP)
 - **健康狀態**: 正常進度 ✅
@@ -197,10 +197,10 @@
 當 Sprint 進度稍微落後於預期時，顯示黃色警示：
 
 **完成率進度條:**
-![黃色進度條示例](../assets/DEMO-yellow-sprint-progress.png)
+![黃色進度條示例](../../assets/DEMO-yellow-sprint-progress.png)
 
 **燃盡圖:**
-![黃色燃盡圖示例](../assets/DEMO-yellow-sprint-burndown.png)
+![黃色燃盡圖示例](../../assets/DEMO-yellow-sprint-burndown.png)
 
 - **完成率**: 69.43% (243/350 SP)
 - **健康狀態**: 稍微落後 ⚠️
@@ -213,10 +213,10 @@
 當 Sprint 進度嚴重落後時，顯示紅色危險警示：
 
 **完成率進度條:**
-![紅色進度條示例](../assets/DEMO-red-sprint-progress.png)
+![紅色進度條示例](../../assets/DEMO-red-sprint-progress.png)
 
 **燃盡圖:**
-![紅色燃盡圖示例](../assets/DEMO-red-sprint-burndown.png)
+![紅色燃盡圖示例](../../assets/DEMO-red-sprint-burndown.png)
 
 - **完成率**: 26.57% (93/350 SP)
 - **健康狀態**: 嚴重落後 🚨
@@ -244,7 +244,7 @@
 
 - **痛點分析**: [`painpoint1-progress.md`](./painpoint1-progress.md)
 - **產品需求**: [`pain-points-examples.md`](./pain-points-examples.md)
-- **視覺化 Demo**: [`../assets/`](../assets/) - 包含完整的健康狀態視覺化示例
+- **視覺化 Demo**: [`../../assets/`](../../assets/) - 包含完整的健康狀態視覺化示例
 
 ## 🔗 相關 User Stories
 
