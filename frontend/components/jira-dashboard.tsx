@@ -39,12 +39,42 @@ export default function JiraDashboard() {
     sprint: selectedSprint === 'All' ? undefined : selectedSprint,
   })
 
-  // 將狀態分布資料轉換為圖表格式
-  const chartData = statusDistribution?.distribution.map(item => ({
-    name: item.status,
-    value: item.count,
-    percentage: item.percentage
-  })) || []
+  // 定義 Status 的正確順序
+  const statusOrder = [
+    'Backlog',
+    'Evaluated', 
+    'To Do',
+    'In Progress',
+    'Waiting',
+    'PR Review',
+    'Dev Completed',
+    'Ready to Test',
+    'Ready to Verify',
+    'Testing',
+    'Ready to Release',
+    'Done',
+    'Invalid',
+    'Routine'
+  ]
+
+  // 將狀態分布資料轉換為圖表格式，並按指定順序排序
+  const chartData = statusDistribution?.distribution
+    .map(item => ({
+      name: item.status,
+      value: item.count,
+      percentage: item.percentage
+    }))
+    .sort((a, b) => {
+      const indexA = statusOrder.indexOf(a.name)
+      const indexB = statusOrder.indexOf(b.name)
+      
+      // 如果狀態不在預定義順序中，放到最後
+      if (indexA === -1 && indexB === -1) return 0
+      if (indexA === -1) return 1
+      if (indexB === -1) return -1
+      
+      return indexA - indexB
+    }) || []
 
   return (
     <div className="flex min-h-screen w-full flex-col">
