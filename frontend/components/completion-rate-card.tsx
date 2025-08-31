@@ -5,54 +5,36 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { AlertTriangle, TrendingUp, AlertCircle } from "lucide-react"
 import type { SprintBurndownData } from "@/hooks/use-sprint-burndown"
+import { getStatusConfig } from "@/lib/status-colors"
 
 interface CompletionRateCardProps {
   sprintData: SprintBurndownData
   className?: string
 }
 
-const getStatusConfig = (status: SprintBurndownData['status']) => {
+const getStatusIcon = (status: SprintBurndownData['status']) => {
   switch (status) {
     case 'normal':
-      return {
-        color: 'bg-green-500',
-        badgeVariant: 'default' as const,
-        badgeClassName: 'bg-green-100 text-green-800 hover:bg-green-100',
-        icon: TrendingUp,
-        iconColor: 'text-green-600',
-        label: '正常進度'
-      }
+      return TrendingUp
     case 'warning':
-      return {
-        color: 'bg-yellow-500',
-        badgeVariant: 'secondary' as const,
-        badgeClassName: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100',
-        icon: AlertTriangle,
-        iconColor: 'text-yellow-600',
-        label: '稍微落後'
-      }
+      return AlertTriangle
     case 'danger':
-      return {
-        color: 'bg-red-500',
-        badgeVariant: 'destructive' as const,
-        badgeClassName: 'bg-red-100 text-red-800 hover:bg-red-100',
-        icon: AlertCircle,
-        iconColor: 'text-red-600',
-        label: '嚴重落後'
-      }
+      return AlertCircle
+    default:
+      return AlertCircle
   }
 }
 
 export function CompletionRateCard({ sprintData, className }: CompletionRateCardProps) {
   const statusConfig = getStatusConfig(sprintData.status)
-  const StatusIcon = statusConfig.icon
+  const StatusIcon = getStatusIcon(sprintData.status)
 
   const formatStoryPoints = (points: number) => {
     return Number.isInteger(points) ? points.toString() : points.toFixed(1)
   }
 
   return (
-    <Card className={className}>
+    <Card className={className} data-testid="completion-rate-card">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold">Sprint 完成率</CardTitle>
@@ -83,8 +65,7 @@ export function CompletionRateCard({ sprintData, className }: CompletionRateCard
               className="h-full transition-all rounded-full"
               style={{ 
                 width: `${sprintData.completion_rate}%`,
-                backgroundColor: statusConfig.color.includes('green') ? '#22c55e' :
-                                 statusConfig.color.includes('yellow') ? '#eab308' : '#ef4444'
+                backgroundColor: statusConfig.color
               }}
             />
           </div>

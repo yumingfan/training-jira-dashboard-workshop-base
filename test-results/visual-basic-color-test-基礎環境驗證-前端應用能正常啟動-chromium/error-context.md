@@ -1,0 +1,76 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - generic [ref=e5]:
+      - link "Jira Dashboard" [ref=e6] [cursor=pointer]:
+        - /url: /
+        - button "Jira Dashboard" [ref=e7] [cursor=pointer]
+      - link "Google Sheets Table" [ref=e8] [cursor=pointer]:
+        - /url: /google-sheets
+        - button "Google Sheets Table" [ref=e9] [cursor=pointer]
+  - generic [ref=e10]:
+    - paragraph [ref=e12]: 請修改這行文字並 commit 到 GitHub 確認是否能修改！
+    - generic [ref=e13]:
+      - banner [ref=e14]:
+        - generic [ref=e15]:
+          - img [ref=e16]
+          - heading "Jira Dashboard" [level=1] [ref=e19]
+        - generic [ref=e21]:
+          - generic [ref=e22]: "Sprint:"
+          - combobox [ref=e23] [cursor=pointer]:
+            - img [ref=e24] [cursor=pointer]
+      - main [ref=e26]:
+        - generic [ref=e29]:
+          - paragraph [ref=e30]: "Error: Failed to fetch"
+          - button "Retry" [ref=e31] [cursor=pointer]
+        - generic [ref=e32]:
+          - generic [ref=e33]:
+            - generic [ref=e34]:
+              - generic [ref=e35]: Total Issue Count
+              - img [ref=e36]
+            - generic [ref=e39]:
+              - generic [ref=e40]: "0"
+              - paragraph [ref=e41]: Total issues tracked
+          - generic [ref=e42]:
+            - generic [ref=e43]:
+              - generic [ref=e44]: Total Story Points
+              - img [ref=e45]
+            - generic [ref=e49]:
+              - generic [ref=e50]: "0.0"
+              - paragraph [ref=e51]: Total story points
+          - generic [ref=e52]:
+            - generic [ref=e53]:
+              - generic [ref=e54]: Total Done Item Count
+              - img [ref=e55]
+            - generic [ref=e58]:
+              - generic [ref=e59]: "0"
+              - paragraph [ref=e60]: Completed issues
+          - generic [ref=e61]:
+            - generic [ref=e62]:
+              - generic [ref=e63]: Done Story Points
+              - img [ref=e64]
+            - generic [ref=e67]:
+              - generic [ref=e68]: "0.0"
+              - paragraph [ref=e69]: Completed story points
+        - generic [ref=e71]:
+          - generic [ref=e72]:
+            - generic [ref=e73]: Issue Status Distribution
+            - generic [ref=e74]: A breakdown of issues by their current status.
+          - generic [ref=e76]: No status data available
+  - generic [ref=e81] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e82] [cursor=pointer]:
+      - img [ref=e83] [cursor=pointer]
+    - generic [ref=e86] [cursor=pointer]:
+      - button "Open issues overlay" [ref=e87] [cursor=pointer]:
+        - generic [ref=e88] [cursor=pointer]:
+          - generic [ref=e89] [cursor=pointer]: "2"
+          - generic [ref=e90] [cursor=pointer]: "3"
+        - generic [ref=e91] [cursor=pointer]:
+          - text: Issue
+          - generic [ref=e92] [cursor=pointer]: s
+      - button "Collapse issues badge" [ref=e93] [cursor=pointer]:
+        - img [ref=e94] [cursor=pointer]
+  - alert [ref=e96]
+```

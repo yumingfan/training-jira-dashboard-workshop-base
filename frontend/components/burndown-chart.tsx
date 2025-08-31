@@ -5,24 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import type { ChartDataPoint, SprintBurndownData } from "@/hooks/use-sprint-burndown"
+import { getStatusColor } from "@/lib/status-colors"
 
 interface BurndownChartProps {
   chartData: ChartDataPoint[]
   sprintData: SprintBurndownData
   className?: string
-}
-
-const getStatusColor = (status: SprintBurndownData['status']) => {
-  switch (status) {
-    case 'normal':
-      return '#10b981' // green-500
-    case 'warning':
-      return '#f59e0b' // yellow-500
-    case 'danger':
-      return '#ef4444' // red-500
-    default:
-      return '#6b7280' // gray-500
-  }
 }
 
 const chartConfig = {
@@ -96,7 +84,7 @@ export function BurndownChart({ chartData, sprintData, className }: BurndownChar
   const yAxisMax = Math.ceil(maxValue * 1.1)
 
   return (
-    <Card className={className}>
+    <Card className={className} data-testid="burndown-chart">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Sprint 燃盡圖</span>
