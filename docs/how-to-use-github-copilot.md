@@ -181,13 +181,78 @@ Agent 非常適合在編碼前進行需求討論：
 | 下一個建議 | `Alt+]` | `Option+]` |
 | 上一個建議 | `Alt+[` | `Option+[` |
 
-## 8. 最佳實踐建議
+## 8. 最新 Copilot 功能（2025年更新）
+
+### Slash Commands（斜線指令）
+GitHub Copilot 現在支援更多專業的 slash commands：
+
+#### 測試相關指令
+```
+/tests - 針對現有代碼生成或運行測試
+/setupTests - 設定測試環境和框架
+```
+
+#### 工作流程指令
+```
+/new - 創建新的工作區或專案腳手架
+/fix - 修復代碼中的錯誤或問題
+/explain - 解釋選中的代碼或概念
+/doc - 為代碼生成文檔
+```
+
+#### 進階指令
+```
+/commit - 基於變更生成提交訊息
+/help - 顯示可用的指令和功能
+```
+
+### 關於 `@workspace /tests` 的使用
+**`@workspace /tests` 是非常適合的指令組合**：
+
+- **`@workspace`** 提供整個工作區的上下文，讓 Copilot 了解專案結構
+- **`/tests`** 專門針對測試場景優化的指令
+
+### 使用範例
+```
+@workspace /tests 為這個 React 組件生成單元測試
+
+@workspace /tests 檢查現有測試覆蓋率
+
+@workspace /setupTests 設定 Jest 和 React Testing Library
+
+@workspace /tests 為 backend-dotnet 專案生成 xUnit 測試
+```
+
+### 新增的 Chat Modes
+Copilot 現在支援專業的 Chat Modes：
+
+#### TDD（測試驅動開發）模式
+- **TDD Red Phase** - 先寫失敗的測試
+- **TDD Green Phase** - 寫最少代碼讓測試通過
+- **TDD Refactor Phase** - 重構改善代碼品質
+
+#### 專業開發模式
+- **Code Review Mode** - 專業代碼審查
+- **Security Sentinel** - 安全漏洞檢查
+- **Architecture Planner** - 架構規劃助手
+
+### 工具整合功能
+Copilot 現在可以直接調用工具：
+
+```
+@workspace 使用 read_file 工具分析這個檔案
+
+@workspace 使用 write_file 工具創建新的測試檔案
+```
+
+## 9. 最佳實踐建議
 
 1. **提供清晰的上下文**: 使用 `#file:` 或 `@workspace` 來提供相關檔案
-2. **具體的問題**: 避免過於籠統的問題，提供具體的需求
+2. **善用 Slash Commands**: 使用 `/tests`、`/fix`、`/explain` 等專業指令
 3. **分步驟處理**: 複雜任務分解成多個小步驟
 4. **驗證建議**: 總是檢查和測試 Copilot 提供的代碼
 5. **善用專案規則**: 建立 `.copilot-instructions.md` 來確保一致性
+6. **利用 Chat Modes**: 針對特定任務選擇合適的聊天模式
 
 ## 9. 常見問題排解
 
@@ -199,9 +264,20 @@ Agent 非常適合在編碼前進行需求討論：
 ### 建議不相關
 - 提供更多上下文
 - 使用更具體的描述
-- 嘗試使用不同的 @ Agent
+- 嘗試使用不同的 @ Agent 或 slash commands
 
 ### 代碼品質不佳
 - 建立專案規則檔案
 - 提供更詳細的需求描述
 - 使用代碼審查和測試來驗證建議
+
+## 10. 實用快捷鍵總覽
+
+| 功能 | Windows/Linux | macOS |
+|------|---------------|-------|
+| 打開 Chat | `Ctrl+Shift+I` | `Cmd+Shift+I` |
+| 內聯編輯 | `Ctrl+I` | `Cmd+I` |
+| 接受建議 | `Tab` | `Tab` |
+| 拒絕建議 | `Esc` | `Esc` |
+| 下一個建議 | `Alt+]` | `Option+]` |
+| 上一個建議 | `Alt+[` | `Option+[` |
