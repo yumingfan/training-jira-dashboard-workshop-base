@@ -210,18 +210,25 @@ GitHub Copilot 現在支援更多專業的 slash commands：
 **`@workspace /tests` 是非常適合的指令組合**：
 
 - **`@workspace`** 提供整個工作區的上下文，讓 Copilot 了解專案結構
-- **`/tests`** 專門針對測試場景優化的指令
+- **`/tests`** 專門針對測試場景優化的指令，會觸發測試生成、檢查或設定流程
 
-### 使用範例
+使用時的實務建議（包含模型用量建議）
+
+- 批量產生測試範本或大量自動化產出：先使用較低成本的模型（例如 0.33x），可以快速取得草稿並節省配額；
+- 精修、審核或需要高準確性的測試內容：使用完整模型（1x）來提高生成品質；
+- 僅需讀取檔案、檢查快取、或執行工具化流程（例如只用 read_file、find tests）：選擇 0x 或工具呼叫，避免額外模型呼叫與費用。
+
+短流程範例（實際在 Chat 中使用）
+
 ```
-@workspace /tests 為這個 React 組件生成單元測試
+@workspace /tests 為 components/Button.tsx 生成 Jest + React Testing Library 的單元測試（建議先用 0.33x 取得草稿，然後用 1x 精修）
 
-@workspace /tests 檢查現有測試覆蓋率
+@workspace /tests 檢查 backend-dotnet 中的測試覆蓋率，並建議缺少的 xUnit 測試（可先用 0.33x 做快速掃描）
 
-@workspace /setupTests 設定 Jest 和 React Testing Library
-
-@workspace /tests 為 backend-dotnet 專案生成 xUnit 測試
+@workspace /setupTests 為 frontend 專案設定 Jest 與 React Testing Library（如果只是修改設定檔，可用 0x + write_file 工具來避免模型成本）
 ```
+
+這樣的策略能平衡成本、速度與品質，特別在需要生成大量測試檔時能有效控制配額。請告訴我是否要把這個模型用量建議同步到 `.copilot-instructions.md`。 
 
 ### 新增的 Chat Modes
 Copilot 現在支援專業的 Chat Modes：
