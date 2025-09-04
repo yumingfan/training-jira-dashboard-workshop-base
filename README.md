@@ -2,6 +2,12 @@
 
 使用 AI 驅動開發工具建構全端應用程式的綜合工作坊
 
+## 給學員的連結
+
+- Slide: https://gamma.app/docs/Agile-AI-AI--nlmavw76yyt3hy8
+- 大組共享文件 CheckList: https://docs.google.com/spreadsheets/d/1npVh5Rlljy4S-YNpu5pwD4e6KSmoeO3PXQIhWqxxgmA/edit?usp=sharing
+- 資料文件複本: https://docs.google.com/spreadsheets/d/1RmJjghgiV3XWLl2BaxT-md8CP3pqb1Wuk-EhFoqp1VM/edit?usp=sharing
+
 ## 📋 系統需求
 
 請確保已安裝：
@@ -169,7 +175,7 @@ workshop.bat reset
 3. 所有服務的 logs 都可透過 `make logs` 查看
 4. 遇到問題先執行 `make health` 檢查狀態
 
-## 📖 延伸閱讀
+## 延伸閱讀
 
 - [Docker 設定指南](./docs/docker_setup_guide.md)
 - [技術架構說明](./docs/tech-overview.md)
